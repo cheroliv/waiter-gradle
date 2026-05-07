@@ -1,0 +1,138 @@
+= Cadrage Méthode 3 — Zoning, Storyboard, Sitemap — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Cadrage Méthode 3 — Zoning, Storyboard, Sitemap
+:summary: Structure modulaire, flux d'exécution, intégration dans l'écosystème foundry.
+
+
+== 1. Zoning — Structure modulaire du plugin
+
+Le plugin est dans `engine/`. Structure minimale, tool-agnostique.
+
+```
+engine/
+├── build.gradle.kts                      ← includeBuild() vers N0/N1/N2
+├── settings.gradle.kts                   ← pluginManagement + include("waiter-plugin")
+├── AGENT.adoc
+├── .agents/
+│   ├── INDEX.adoc
+│   └── SESSION_CHECKLIST.adoc
+│
+└── waiter-plugin/
+    ├── build.gradle.kts                  ← plugin java-gradle-plugin + kotlin-dsl
+    └── src/
+        ├── main/kotlin/com/cheroliv/engine/
+        │   ├── WaiterPlugin.kt              ← entry point, enregistre les tasks
+        │   └── tasks/
+        │       ├── ShellTask.kt             ← wrapper shell vers chaque plugin N0/N1/N2
+        │       └── CiCdTask.kt              ← commit+push → CI/CD GitHub Actions
+        │
+        └── test/kotlin/com/cheroliv/engine/
+            ├── PluginFunctionalTest.kt       ← TestKit : apply plugin → tasks presentes
+            └── ShellTaskTest.kt              ← TestKit : execute shell task → stdout
+
+
+== 2. Storyboard — Flux d'exécution
+
+=== Flow 1 : Bootstrap (one-shot)
+
+[plantuml]
+----
+@startuml
+actor Dev
+participant "Terminal" as T
+participant "Gradle" as G
+
+Dev -> T : git clone engine/
+Dev -> T : ./gradlew tasks
+T -> G : invocation
+G -> G : scanne waiter-plugin + includeBuild()
+G --> T : liste des taches disponibles
+Dev -> T : ./gradlew {task}
+----
+@enduml
+
+=== Flow 2 : Exécution locale synchrone
+
+[plantuml]
+----
+@startuml
+actor "Utilisateur/Agent" as U
+participant "Shell" as S
+participant "Gradle Daemon" as D
+participant "Plugin N2" as N2
+
+U -> S : ./gradlew -p engine {task}
+S -> D : hot-start (daemon deja lance, < 2s)
+D -> N2 : execute la tache demandee
+N2 --> D : SUCCESS (resultat produit)
+D --> S : BUILD SUCCESSFUL + stdout
+S --> U : resultat
+----
+@enduml
+
+=== Flow 3 : Exécution CI/CD (canal principal)
+
+[plantuml]
+----
+@startuml
+actor "Utilisateur/Agent" as U
+participant "Engine local" as E
+participant "Git" as G
+participant "GitHub Actions" as CI
+participant "Runner" as R
+
+U -> E : ./gradlew -p engine {task} --mode=ci
+E -> G : git commit intention → push
+G -> CI : push declenche workflow
+CI -> R : ./gradlew {task} (CPU/GPU/RAM du runner)
+R -> R : execution (peut durer minutes ou heures)
+R -> G : git commit resultat → push
+U -> E : git pull → resultat disponible
+----
+@enduml
+
+
+== 3. Sitemap — Intégration dans l'écosystème foundry
+
+```
+N3 engine/
+   ├── includeBuild("graphify")           ← N0
+   ├── includeBuild("codebase")           ← N1
+   ├── includeBuild("planner")            ← N2
+   ├── includeBuild("plantuml")           ← N2
+   ├── includeBuild("slider")             ← N2
+   ├── includeBuild("bakery")             ← N2
+   ├── includeBuild("readme")             ← N2
+   ├── includeBuild("newpipe")            ← N2
+   ├── includeBuild("saas-deploy")        ← N2
+   ├── includeBuild("codex")              ← N2
+   ├── includeBuild("quizz-benchmark")    ← N2
+   ├── includeBuild("jhipster")           ← N2
+   ├── includeBuild("training")           ← N2
+   ├── includeBuild("notebook")           ← N2
+   └── include("waiter-plugin")           ← ce plugin (N3)
+            │
+            │ interface: ./gradlew -p engine {task}
+            │
+            v
+     Tout consommateur capable de shell-out
+     (terminal, agent LLM, open-webui, opencode)
+            │
+            │ ou interface: git commit+push → CI/CD
+            │
+            v
+     GitHub Actions (execution deportee)
+```
+
+=== Consommateurs possibles
+
+Le plugin est tool-agnostique. Tout agent capable d'executer `./gradlew` ou `git pull` peut le consommer :
+
+|===
+| Type | Exemple | Comment
+| Terminal humain | bash, zsh, fish | `./gradlew -p engine {task}`
+| Agent LLM (LangChain4j) | open-webui, opencode, script custom | `Runtime.exec("./gradlew -p engine {task}")`
+| Agent LLM (Python) | script Python avec subprocess | `subprocess.run(["./gradlew", "-p", "engine", task])`
+| CI/CD | GitHub Actions, Jenkins, GitLab CI | `./gradlew -p engine {task}`
+|===

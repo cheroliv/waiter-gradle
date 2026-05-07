@@ -1,0 +1,123 @@
+= Atelier 2 — Personas & Parcours Utilisateurs — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Atelier 2 — Personas
+:summary: 4 personas + agents LLM, tool-agnostique.
+
+
+== Persona 1 : Le Créateur Dogfooder (CherOliv)
+
+=== Qui ? (Cible)
+
+Auteur-mainteneur de l'écosystème foundry (15+ plugins Gradle, N0→N3). Utilise ses propres outils pour produire articles, formations, decks, diagrammes, sites. Stack : LangChain4j, pgvector, ONNX, Ollama, DeepSeek. Édite dans VSCode/IntelliJ. Le terminal est son interface de pilotage.
+
+=== Que veut-il faire ? (But)
+
+* Pilotage shell immédiat : `./gradlew -p engine {task}` depuis n'importe quel terminal
+* Chaîner des tâches multi-plugins en mode CI/CD (commit+push → GitHub Actions → résultat par commit)
+* Valider que ses plugins fonctionnent depuis l'interface la plus simple possible (un shell)
+* Faire des démos live en formation ou vidéo sans setup complexe
+
+=== Comment va-t-il faire ? (Parcours)
+
+. Ouvre un terminal dans engine/
+. `./gradlew tasks` → liste les capacités disponibles
+. `./gradlew aggregateGraphs` → Gradle Daemon, réponse < 2s, diagramme produit
+. `./gradlew publishSite` → commit+push → CI/CD → site en ligne
+. Tout se passe dans le même terminal, zéro outil externe
+
+
+== Persona 2 : L'Apprenant en Formation
+
+=== Qui ? (Cible)
+
+Stagiaire formation AFNOR/REAC. Connaît les bases Gradle/JVM. Découvre le pilotage par langage naturel d'une fonderie de plugins.
+
+=== Que veut-il faire ? (But)
+
+* Prendre en main en < 10 minutes
+* Reproduire les exercices : génération de deck, diagrammes, indexation
+* Comprendre le lien entre la commande shell et la tâche Gradle exécutée
+* Repartir avec l'environnement sur sa machine
+
+=== Comment va-t-il faire ? (Parcours)
+
+. Le formateur partage le repo `github.com/cheroliv/engine`
+. `sdk install java` + `git clone engine`
+. Exercice 1 : `./gradlew generateDeck -Psubject="Architecture hexagonale"`
+. Le deck .adoc est produit, l'apprenant visualise, pose des questions
+. Exercice 2 : `./gradlew indexCodebase` → RAG disponible, l'apprenant interroge
+. Repart autonome avec un `git clone`
+
+
+== Persona 3 : Le Curieux YouTube
+
+=== Qui ? (Cible)
+
+Développeur JVM découvrant via une vidéo. Veut tester en < 5 min sans polluer sa machine.
+
+=== Que veut-il faire ? (But)
+
+* Reproduire la démo en < 5 minutes
+* Tester avec son propre use case
+* Évaluer sans engagement
+
+=== Comment va-t-il faire ? (Parcours)
+
+. Voit la vidéo « Pilotez 15 plugins Gradle depuis votre terminal »
+. Ouvre `github.com/cheroliv/engine`
+. Copie-colle :
++
+[source,shell]
+----
+sdk install java 25.0.1-graal
+git clone https://github.com/cheroliv/engine
+cd engine && ./gradlew tasks
+----
+. Choisit une tâche pertinente : `./gradlew {task}` → résultat immédiat
+. Si ça matche → il garde. Si non → `rm -rf engine`, 5 minutes.
+
+
+== Persona 4 : L'Agent LLM (LangChain4j)
+
+=== Qui ? (Cible)
+
+Agent logiciel embarquant LangChain4j, s'exécutant dans open-webui, opencode, ou n'importe quel runtime JVM. Ingère les fichiers `.agents/*.adoc` (AGENT.adoc, INDEX.adoc, PROMPT_REPRISE.adoc) pour comprendre l'écosystème, les règles, et les capacités disponibles. Reproduit le comportement du développeur en interprétant les intentions en appels shell.
+
+=== Que veut-il faire ? (But)
+
+* Découvrir les capacités disponibles : `./gradlew tasks` → parsing → liste des tâches
+* Exécuter une tâche identifiée : `./gradlew -p engine {task}`
+* Déléguer au CI/CD : commit+push → GitHub Actions → `git pull` du résultat
+* Rester dans la JVM : zéro Python, zéro MCP, zéro HTTP — tout par shell-out
+
+=== Comment va-t-il faire ? (Parcours)
+
+. Charge les fichiers EAGER (AGENT.adoc → INDEX.adoc → PROMPT_REPRISE.adoc)
+. Identifie la tâche correspondant à l'intention utilisateur
+. `Runtime.exec("./gradlew -p engine {task}")` → capture stdout/stderr
+. Parse le résultat, formate la réponse
+. Si tâche lourde : commit+push → `gh run watch` → `git pull` → résultat
+
+
+== Persona 5 : Le Créateur de Contenu Assisté
+
+=== Qui ? (Cible)
+
+Auteur, formateur, architecte, conférencier. Produit des livrables multi-formats : articles, decks, diagrammes, sites. Le « contenu » est défini aussi largement que ce que Gradle permet d'automatiser. L'interface shell est son cockpit.
+
+=== Que veut-il faire ? (But)
+
+* Générer un livrable complet depuis une intention : `./gradlew decomposeIntention -Pintention="conférence sur X"`
+* Itérer en modifiant les paramètres
+* Publier le résultat : `./gradlew publishSite`
+* Enrichir via RAG : `./gradlew indexCodebase` → contenu contextuel
+
+=== Comment va-t-il faire ? (Parcours)
+
+. `./gradlew decomposeIntention -Pintention="préparer une conférence sur l'archi hexagonale avec LangChain4j"`
+. Plan structuré [EPIC][US][TASK] retourné
+. Ajuste les paramètres, relance
+. `./gradlew generateDeck` → deck .adoc produit
+. `./gradlew publishSite` → commit+push → CI/CD → en ligne
+. Tout se passe dans le terminal. Zéro outil externe.

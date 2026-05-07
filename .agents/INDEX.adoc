@@ -1,0 +1,93 @@
+= INDEX — waiter-plugin
+:toc:
+
+_Regles absolues_ : voir `AGENT.adoc`
+_DAG_ : N3 — Plugin Gradle dans engine/ — point d'entree unique de la fonderie
+
+_Derniere mise a jour_ : 2026-05-07
+_Session en cours_ : 000 — Cadrage Methodologique (8 ateliers Cadrage Méthode)
+_Session terminee_ : —
+
+'''
+== REGLES ABSOLUES
+
+=== 1. COMMITS/GIT — INTERDICTION FORMELLE sans permission
+=== 2. Le protocole Git (commit+push) est le canal de communication par defaut
+=== 3. Plugin publie sur Gradle Plugin Portal (`com.cheroliv.waiter`)
+=== 4. PROCEDURE DE FIN DE SESSION — 6 ETAPES OBLIGATOIRES
+=== 5. HOOK OUVERTURE — Checklist SESSION_CHECKLIST.adoc obligatoire
+=== 6. TOOL-AGNOSTIQUE — zero adherence a un outil consommateur
+
+'''
+== Sessions
+
+|===
+| # | Date | Type | Sujet | Score
+| 000 | 2026-05-07 | cadrage | Cadrage Methodologique : 8 ateliers (QQOQCP→Sprint Planning), `.agents/`, renommage waiter-plugin, tool-agnostique | 10/10
+|===
+
+'''
+== Roadmap
+
+|===
+| EPIC | Description | Statut | Priorite
+| C-1 | Vision (QQOQCP + Product Vision Board) | ✅ TERMINE | P0
+| C-2 | Personas (5 personas + parcours) | ✅ TERMINE | P0
+| C-3 | Zoning / Storyboard / Sitemap | ✅ TERMINE | P0
+| C-4 | DSL / Conventions / Moodboard | ✅ TERMINE | P1
+| C-5 | Story Mapping / User Stories | ✅ TERMINE | P1
+| C-6 | Backlog (23 US) | ✅ TERMINE | P1
+| C-7 | Technique & Architecture | ✅ TERMINE | P1
+| C-8 | Sprint Planning & Atomicisation | ✅ TERMINE | P0
+| .AG-0 | Creation `.agents/` (AGENT, INDEX, CHECKLIST, etc.) | ✅ TERMINE | P0
+| .AG-1 | Consolidation `.agents/` (waiter-plugin, CADRAGE_METHODE_N) | ✅ TERMINE | P0
+| EPIC-0 | Onboarding — Docker + JDK + `./gradlew` bootstrap | A FAIRE | P0
+| EPIC-1 | Decouverte — `./gradlew tasks`, parsing, descriptions | A FAIRE | P0
+| EPIC-2 | Execution — shell wrapper + chaining + erreurs | A FAIRE | P0
+| EPIC-3 | RAG & Contexte | A FAIRE | P1
+| EPIC-4 | Publication | A FAIRE | P1
+| EPIC-5 | Qualite — TestKit, CI, Plugin Portal | A FAIRE | P1
+|===
+
+'''
+== Documents de Cadrage
+
+|===
+| Fichier | Role | Atelier
+| `CADRAGE_METHODE_1.adoc` | QQOQCP + Product Vision Board | 1
+| `CADRAGE_METHODE_2.adoc` | 5 personas + parcours (dont Agent LLM) | 2
+| `CADRAGE_METHODE_3.adoc` | Modules, flux, integration DAG | 3
+| `CADRAGE_METHODE_4.adoc` | DSL, conventions, style | 4
+| `CADRAGE_METHODE_5.adoc` | 6 EPICs, 23 US priorisees | 5
+| `CADRAGE_METHODE_6.adoc` | Backlog estime (Story Points) | 6
+| `CADRAGE_METHODE_7.adoc` | Stack, archi, flux, securite, CI/CD | 7
+| `CADRAGE_METHODE_8.adoc` | Synthèse, Sprint Planning, DoD/DoR, US atomiques | 8
+|===
+
+'''
+== Fichiers Associes
+
+|===
+| Fichier | Role | Type
+| `.agents/AGENT.adoc` | Directives agent | EAGER
+| `.agents/INDEX.adoc` | Dashboard + roadmap + portefeuille | EAGER
+| `.agents/SESSION_CHECKLIST.adoc` | Checklist ouverture/fermeture session | EAGER
+| `.agents/PROMPT_REPRISE.adoc` | Mission session en cours | EAGER
+| `.agents/SESSIONS_HISTORY.adoc` | Historique complet des sessions | EAGER
+| `.agents/sessions/` | Archives par session | LAZY
+| `.agents/archives/` | Archives taches terminees | LAZY
+|===
+
+'''
+== Portefeuille — Projets Gouvernes
+
+|===
+| Projet | Chemin | Sessions | Derniere maj
+| waiter-plugin | `waiter-plugin/` | 1 | 2026-05-07
+| planner-gradle | `foundry/OSS/planner-gradle/` | 3 | 2026-05-07
+| codex-gradle | `foundry/OSS/codex-gradle/` | 4 | 2026-05-07
+| codebase-gradle | `foundry/OSS/codebase-gradle/` | 5 | 2026-05-07
+| quizz-benchmark | `foundry/OSS/quizz-benchmark-gradle/quizz-benchmark-plugin/` | 3 | 2026-05-07
+| magic_stick | `foundry/OSS/magic_stick/` | 69 | 2026-05-07
+| magic-stick (doc site) | `office/sites/magic-stick/` | 1 | 2026-05-07
+|===

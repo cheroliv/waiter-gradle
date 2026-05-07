@@ -1,0 +1,28 @@
+= SESSION_CHECKLIST — waiter-plugin
+
+== EAGER — Chargement Prioritaire (a chaque session)
+
+. [ ] Lire `AGENT.adoc` — regles absolues
+. [ ] Lire `.agents/INDEX.adoc` — roadmap, EPICs, portefeuille
+. [ ] Lire `PROMPT_REPRISE.adoc` — mission de la session en cours
+
+== Hook d'Ouverture — Procedure standard
+
+. [ ] `git status` — branche, fichiers modifies
+. [ ] Verifier que le build compile : `./gradlew compileKotlin`
+
+== Pendant la session
+
+. [ ] Regle 1 — AUCUN commit sans permission explicite
+. [ ] Protocole Git comme canal de communication (commit+push = signal)
+. [ ] ZERO secret/codebase expose
+. [ ] Verifier que chaque modification compile avant de continuer
+
+== Hook de Fermeture — Procedure 6 etapes
+
+. [ ] 1. Rapport de session → `.agents/sessions/NNN-sujet.adoc`
+. [ ] 2. Mise a jour `PROMPT_REPRISE.adoc` — contexte reprise N+1 (max 70 lignes)
+. [ ] 3. Mise a jour `.agents/INDEX.adoc` — numero de session, roadmap, statut EPICs
+. [ ] 4. Mise a jour `.agents/SESSIONS_HISTORY.adoc` — ajouter entree
+. [ ] 5. Verification — `git status`, absence de secrets (`grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"`), build compile
+. [ ] 6. Revue protocole Git — conforme a `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`

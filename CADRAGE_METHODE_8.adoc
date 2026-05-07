@@ -1,0 +1,429 @@
+= Cadrage Méthode 8 — Planification Sprint & Atomicisation — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Cadrage Méthode 8 — Planification Sprint
+:summary: Synthese des ateliers, sprint planning, DoD, DoR, decomposition atomique Sprint 1.
+
+
+== Synthese des 8 Ateliers de Cadrage
+
+|===
+| Atelier | Sujet | Decision cle
+| 1 — Vision | QQOQCP + Product Vision Board | Plugin `com.cheroliv.waiter` dans engine N3. Tool-agnostique. Experience de creation de contenu complete.
+| 2 — Personas | 5 personas + parcours | Dogfooder, Apprenant, Curieux YouTube, Agent LLM (LangChain4j), Createur de contenu assiste.
+| 3 — Zoning/Sitemap | Modules, flux, DAG | Plugin dans engine/ via `include()`. 3 flux : bootstrap, execution locale, CI/CD.
+| 4 — DSL/Moodboard | DSL + conventions | DSL `engine { }` convention-based. Style foundry.
+| 5 — Story Mapping | 5 EPICs priorises | EPIC-0→EPIC-4, 17 US.
+| 6 — Backlog | US estimees | 17 US, estimees de 1 a 13 Story Points.
+| 7 — Technique & Architecture | Stack, archi, CI/CD, securite | Stack 100% Kotlin/Gradle. Canaux : stdout POSIX + Git commit+push. Protocol Git herite de codex-gradle.
+| 8 — Sprint Planning | ce document | Synthèse, DoD, DoR, Sprint 1 atomise.
+|===
+
+
+== Definition of Ready (DoR)
+
+|===
+| Condition | Verification
+| Format US standard | « En tant que <role>, je veux <action> afin que <valeur> »
+| Criteres d'acceptation | Binaires, testables sans ambiguite.
+| Estimation | coherente avec US similaires.
+| Pas de dependance externe | Aucun blocage hors du sprint.
+| Taches atomiques | Chaque tache < 2h.
+|===
+
+== Definition of Done (DoD)
+
+|===
+| Condition | Verification
+| Code compile | `./gradlew :waiter-plugin:compileKotlin` → SUCCESS
+| Tests passent | `./gradlew :waiter-plugin:test` → all green
+| TestKit fonctionnel | `./gradlew :waiter-plugin:functionalTest` → OK
+| Demo fonctionnelle | L'US demontrable en conditions reelles
+| Documentation a jour | `.agents/` mis a jour
+| Pas de regression | US precedentes OK
+| Zero secret | `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` → vide
+| Protocole Git conforme | Canal CI/CD coherent avec `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`
+|===
+
+== Sprint Planning
+
+|===
+| Sprint | EPIC | US | Points | Duree
+| Sprint 1 | EPIC-0 Onboarding | US-0.1 → US-0.4 | 9 | 2-3 jours
+| Sprint 2 | EPIC-1 Execution (part 1) | US-1.1, US-1.2, US-1.4 | 12 | 3-4 jours
+| Sprint 3 | EPIC-1 Execution (part 2) | US-1.3, US-1.5 | 10 | 2-3 jours
+| Sprint 4 | EPIC-2 RAG + EPIC-3 Publication | US-2.1, US-3.1, US-3.2 | 10 | 2-3 jours
+| Sprint 5 | EPIC-2 RAG (suite) + EPIC-4 Qualite | US-2.2, US-4.1, US-4.2, US-4.3 | 17 | 5-7 jours
+| Sprint 6 | EPIC-2 (Codex) | US-2.3 | 13 | 5-7 jours
+|===
+
+
+=== Sprint 1 — EPIC-0 Onboarding (9 pts)
+
+*Objectif* : Plugin bootstrape dans engine/, `git clone + ./gradlew tasks` fonctionnel, Docker Compose operationnel.
+
+==== US-0.1 — git clone + ./gradlew tasks (3 pts)
+
+En tant que developpeur, je veux `git clone engine && ./gradlew tasks` afin de voir toutes les taches disponibles.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-0.1.1 | Creer `engine/waiter-plugin/settings.gradle.kts` avec `rootProject.name`. | `./gradlew :waiter-plugin:projects` liste le projet. | 15m
+| T-0.1.2 | Creer `engine/waiter-plugin/build.gradle.kts` avec `kotlin-dsl` + `java-gradle-plugin`. | `./gradlew :waiter-plugin:compileKotlin` SUCCESS. | 30m
+| T-0.1.3 | Ajouter `include("waiter-plugin")` dans `engine/settings.gradle.kts`. | `./gradlew tasks --all` montre les taches du sous-projet. | 10m
+| T-0.1.4 | Implementer `WaiterPlugin.kt` : `class WaiterPlugin : Plugin<Project>`. | TestKit : appliquer le plugin → pas d'exception. | 1h
+| T-0.1.5 | Verifier que `./gradlew tasks` liste les taches du plugin engine. | `./gradlew tasks` → les taches waiter-plugin sont listees. | 15m
+|===
+
+*Criteres d'acceptation :*
+- `git clone https://github.com/cheroliv/engine && cd engine && ./gradlew tasks` → liste les taches
+- Plugin waiter-plugin compile sans erreur
+
+==== US-0.2 — Docker Compose avec engine (3 pts)
+
+En tant que developpeur, je veux `docker compose up` dans engine/ pour avoir un environnement operationnel.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-0.2.1 | Creer `engine/Dockerfile` base `ghcr.io/open-webui/open-webui:main`, JDK 25 headless. | `docker build -t cheroliv/engine .` → OK. | 1h
+| T-0.2.2 | Creer `engine/docker-compose.yaml` : port 3333, volume engine `:ro`, OLLAMA_BASE_URL. | `docker compose up -d` → `curl http://localhost:3333` 200. | 30m
+| T-0.2.3 | Verifier `./gradlew tasks` fonctionnel dans le container. | `docker compose exec engine ./gradlew tasks` → OK. | 15m
+| T-0.2.4 | `.dockerignore` pour exclure `.git/`, `build/`. | `docker build` plus rapide. | 15m
+|===
+
+*Criteres d'acceptation :*
+- `docker compose up -d` depuis engine/ → service accessible
+- `./gradlew tasks` executable depuis le container
+
+==== US-0.3 — README (1 pt)
+
+En tant que developpeur, je veux un README decrivant prerequis et methodes.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-0.3.1 | Rediger README.adoc : titre, description, prerequis. | Fichier present. | 30m
+| T-0.3.2 | Sections : Docker, JDK local, usage rapide, licence. | Commandes copiables. | 30m
+|===
+
+*Criteres d'acceptation :*
+- README present, commandes copiables et fonctionnelles
+
+==== US-0.4 — Dockerfile buildable (2 pts)
+
+En tant que developpeur, je veux builder l'image Docker.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-0.4.1 | Finaliser le Dockerfile (optimisation layers, healthcheck). | `docker build` OK, image < 2 Go. | 1h
+| T-0.4.2 | Verifier le workflow : build → up → test → down. | Cycle complet OK. | 30m
+| T-0.4.3 | Documenter les variables d'environnement. | README liste les ENV. | 15m
+|===
+
+*Criteres d'acceptation :*
+- `docker build -t cheroliv/engine .` termine sans erreur
+- Cycle Docker Compose operationnel
+
+== Recapitulatif Sprint 1
+
+|===
+| US | Description | Taches | Points
+| US-0.1 | git clone + ./gradlew tasks | 5 | 3
+| US-0.2 | Docker Compose | 4 | 3
+| US-0.3 | README | 2 | 1
+| US-0.4 | Dockerfile buildable | 3 | 2
+| *Total* | | *14 taches* | *9 pts*
+|===
+
+== Ordre d'execution recommande
+
+[plantuml]
+----
+@startuml
+rectangle "US-0.1\ngit clone + ./gradlew tasks\n(3 pts, 5 taches)" as US01 #LightGreen
+rectangle "US-0.2\nDocker Compose\n(3 pts, 4 taches)" as US02 #LightBlue
+rectangle "US-0.3\nREADME\n(1 pt, 2 taches)" as US03 #Yellow
+rectangle "US-0.4\nDockerfile buildable\n(2 pts, 3 taches)" as US04 #Pink
+
+US01 --> US02 : depend de
+US02 --> US04 : depend de
+US01 --> US03 : parallele
+@enduml
+----
+
+Recommandation : US-0.1 → US-0.2 → US-0.4. US-0.3 en parallele.
+
+
+=== Sprint 2 — EPIC-1 Execution part 1 (12 pts)
+
+*Objectif* : Execution locale de taches reelles des plugins N2, gestion des erreurs.
+
+==== US-1.1 — ./gradlew aggregateGraphs (5 pts)
+
+En tant qu'utilisateur, je veux `./gradlew aggregateGraphs` afin d'obtenir le diagramme du DAG foundry.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-1.1.1 | Importer graphify-gradle via `includeBuild()` dans engine/build.gradle.kts. | `./gradlew tasks` liste `aggregateGraphs`. | 15m
+| T-1.1.2 | Implementer `AggregateGraphsTask.kt` : wrapper shell vers le plugin graphify. | TestKit : `aggregateGraphs` execute et retourne stdout + exit code. | 1h
+| T-1.1.3 | Passer le parametre `-PoutputDir` au shell wrapper. | `./gradlew aggregateGraphs -PoutputDir=/tmp` produit le diagramme dans /tmp. | 30m
+| T-1.1.4 | Capturer stdout et le formater pour retour lisible. | Le resultat shell est parse : nom de fichier, nombre de noeuds, duree. | 45m
+| T-1.1.5 | Test d'integration : `./gradlew aggregateGraphs` sur un projet foundry clone. | Execution reelle → diagramme produit dans `build/`. | 30m
+|===
+
+==== US-1.2 — ./gradlew decomposeIntention -Pintention="..." (5 pts)
+
+En tant que createur, je veux `./gradlew decomposeIntention -Pintention="..."` afin d'obtenir un plan structure [EPIC][US][TASK].
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-1.2.1 | Importer planner-gradle via `includeBuild()` dans engine/build.gradle.kts. | `./gradlew tasks` liste `decomposeIntention`. | 15m
+| T-1.2.2 | Implementer `DecomposeIntentionTask.kt` : wrapper shell vers le plugin planner. | TestKit : `decomposeIntention` execute et retourne stdout. | 1h
+| T-1.2.3 | Passer le parametre `-Pintention` au shell wrapper. | `./gradlew decomposeIntention -Pintention="creer un site JBake"` → plan retourne. | 30m
+| T-1.2.4 | Capturer et parser la sortie JSON/texte du planner en structure lisible. | Le plan est formate : liste d'EPICs avec US et estimations. | 45m
+| T-1.2.5 | Test d'integration avec une intention reelle. | Execution → plan structure coherent retourne. | 30m
+|===
+
+==== US-1.4 — Message d'erreur lisible (2 pts)
+
+En tant qu'utilisateur, je veux un message d'erreur comprehensible si une tache echoue.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-1.4.1 | Dans `ShellResult`, detecter exit code != 0 et extraire stderr. | Test unitaire : `ShellResult(exitCode=1, stderr="foo")` → `isFailure = true`. | 15m
+| T-1.4.2 | Formater le message d'erreur : extraire la derniere ligne significative de stderr. | `stderr = "ERROR: fichier introuvable\n..."` → message = "Erreur : fichier introuvable". | 30m
+| T-1.4.3 | Ajouter une suggestion contextuelle selon le type d'erreur. | `FileNotFoundException` → "Verifiez que le fichier existe". `TimeoutException` → "Augmentez le timeout". | 45m
+| T-1.4.4 | Integrer dans toutes les taches existantes. | Toute tache qui echoue affiche le message formate. | 30m
+|===
+
+*Criteres d'acceptation :*
+- `./gradlew aggregateGraphs` sur un projet non conforme → message d'erreur clair
+- `./gradlew decomposeIntention -Pintention=""` → erreur "L'intention ne peut pas etre vide"
+
+
+=== Sprint 3 — EPIC-1 Execution part 2 (10 pts)
+
+*Objectif* : Deport CI/CD via commit+push, timeout configurable.
+
+==== US-1.3 — ./gradlew {tache} --mode=ci (8 pts)
+
+En tant qu'utilisateur, je veux `./gradlew {tache} --mode=ci` afin de deporter l'execution sur les runners GitHub Actions et recuperer le resultat par `git pull`.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-1.3.1 | Implementer `CiCdModeTask.kt` ou etendre les taches existantes avec un flag `--mode=ci`. | `./gradlew aggregateGraphs --mode=ci` ne lance pas l'execution locale. | 1h
+| T-1.3.2 | En mode CI/CD : serialiser l'intention en JSON, l'ecrire dans `intentions/`. | Fichier `intentions/aggregateGraphs-20260507.json` cree avec les parametres. | 30m
+| T-1.3.3 | Commiter le fichier d'intention avec le format de commit standardise. | `git commit -m "intent(aggregateGraphs): diagramme DAG"` → commit cree. | 30m
+| T-1.3.4 | Push le commit (avec confirmation explicite). | `git push` → le commit est sur origin. | 15m
+| T-1.3.5 | Creer `.github/workflows/ci-runner.yml` : trigger `on: push` sur `intentions/**`. | Push d'un fichier dans `intentions/` → workflow declenche. | 1h
+| T-1.3.6 | Workflow : checkout → setup-java 25 → `./gradlew executeIntention` → commit resultat. | Workflow execute la tache et commit le resultat dans `outputs/`. | 1h
+| T-1.3.7 | Implementer une tache `watch` pour suivre l'execution distante : `gh run watch`. | `./gradlew watch` affiche le statut du dernier run. | 30m
+| T-1.3.8 | Implementer une tache `pullResult` : `git pull` et parser le commit resultat. | `./gradlew pullResult` → resultat de la derniere tache CI/CD affiche. | 45m
+| T-1.3.9 | Test end-to-end : intention → push → CI/CD → pull → resultat. | Cycle complet fonctionnel. | 30m
+|===
+
+==== US-1.5 — Timeout configurable (2 pts)
+
+En tant qu'utilisateur, je veux un timeout configurable par tache pour eviter les blocages.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-1.5.1 | Ajouter `taskTimeout` dans le DSL `engine { }`. | `engine { taskTimeout.set(600) }` compile. | 15m
+| T-1.5.2 | Dans `ShellExecutor`, utiliser `Process.waitFor(timeout, TimeUnit.SECONDS)`. | Processus tue apres timeout → `ShellResult` avec `isTimeout = true`. | 45m
+| T-1.5.3 | Si timeout, tuer le processus et ses enfants proprement. | `process.destroyForcibly()` + message d'erreur formaté. | 30m
+| T-1.5.4 | Appliquer le timeout a toutes les taches existantes. | Chaque task Gradle utilise le timeout du DSL. | 30m
+|===
+
+*Criteres d'acceptation :*
+- `engine { taskTimeout.set(5) }` → tache de 10 secondes est tuee a 5s
+- Message d'erreur : "Tâche interrompue apres 5 secondes (timeout)"
+
+
+=== Sprint 4 — EPIC-2 RAG part 1 + EPIC-3 Publication (10 pts)
+
+*Objectif* : Indexation RAG locale, publication via bakery, preview de deck.
+
+==== US-2.1 — ./gradlew indexCodebase (5 pts)
+
+En tant que createur, je veux `./gradlew indexCodebase` afin d'indexer le workspace dans pgvector pour le RAG.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-2.1.1 | Importer codebase-gradle via `includeBuild()` dans engine/build.gradle.kts. | `./gradlew tasks` liste `indexCodebase`. | 15m
+| T-2.1.2 | Implementer `IndexCodebaseTask.kt` : wrapper shell vers le plugin codebase. | TestKit : `indexCodebase` execute et retourne stdout. | 1h
+| T-2.1.3 | Passer le parametre `-PindexPath` pour cibler un sous-repertoire. | `./gradlew indexCodebase -PindexPath=office/sites` → indexe uniquement office/sites. | 30m
+| T-2.1.4 | Verifier la connectivite pgvector (Docker PostgreSQL) avant indexation. | Si pgvector indisponible → message d'erreur "PostgreSQL pgvector doit etre lance". | 30m
+| T-2.1.5 | Retourner le nombre de documents indexes et la taille de l'index. | stdout : "127 documents indexes — index: 342 Mo". | 30m
+| T-2.1.6 | Test d'integration : pgvector Docker up → indexation → verification. | Cycle complet OK. | 30m
+|===
+
+==== US-3.1 — ./gradlew publishSite (3 pts)
+
+En tant que createur, je veux `./gradlew publishSite` afin de publier un site via bakery.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-3.1.1 | Verifier que bakery est deja integre dans engine/build.gradle.kts. | `./gradlew tasks` liste `publishSite` (deja existant via bakery). | 15m
+| T-3.1.2 | Implementer le wrapper `PublishSiteTask.kt` si necessaire, ou exposer la tache bakery existante. | `./gradlew publishSite` → bakery execute. | 30m
+| T-3.1.3 | Passer le parametre `-PsiteName` pour publier un site specifique. | `./gradlew -PsiteName=magic-stick publishSite` → magic-stick publie. | 15m
+| T-3.1.4 | Capturer l'URL de publication depuis stdout et l'afficher. | stdout parse → "Site publie : https://cheroliv.com". | 30m
+| T-3.1.5 | Test : `./gradlew publishSite` sur cheroliv.com → URL retournee. | Cycle complet OK. | 30m
+|===
+
+==== US-3.2 — ./gradlew serveDeck (2 pts)
+
+En tant que createur, je veux `./gradlew serveDeck` afin de previsualiser un deck avant publication.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-3.2.1 | Importer slider-gradle via `includeBuild()` dans engine/build.gradle.kts. | `./gradlew tasks` liste `serveDeck`. | 15m
+| T-3.2.2 | Implementer `ServeDeckTask.kt` : wrapper shell vers le plugin slider. | `./gradlew serveDeck` → serveur local demarre. | 45m
+| T-3.2.3 | Retourner l'URL locale du serveur de preview. | stdout : "Deck accessible sur http://localhost:9090". | 15m
+| T-3.2.4 | Gerer l'arret propre du serveur de preview. | Ctrl+C ou `./gradlew stopDeckServer` → processus tue. | 30m
+| T-3.2.5 | Test : generation d'un deck → `serveDeck` → acces navigateur → contenu correct. | Cycle complet OK. | 30m
+|===
+
+*Criteres d'acceptation :*
+- `./gradlew indexCodebase` → pgvector Docker up → "N documents indexes"
+- `./gradlew publishSite` → bakery execute → URL retournee
+- `./gradlew serveDeck` → serveur local → deck previsualisable
+
+
+=== Sprint 5 — EPIC-2 RAG part 2 + EPIC-4 Qualite (17 pts)
+
+*Objectif* : Interrogation RAG, tests TestKit, CI, publication Plugin Portal.
+
+==== US-2.2 — ./gradlew queryRag -Pquestion="..." (8 pts)
+
+En tant que createur, je veux `./gradlew queryRag -Pquestion="..."` afin d'interroger la base RAG et obtenir des reponses contextuelles.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-2.2.1 | Implementer `QueryRagTask.kt` : wrapper shell vers le plugin codebase (query mode). | TestKit : `queryRag` execute et retourne stdout. | 1h
+| T-2.2.2 | Passer le parametre `-Pquestion` et optionnellement `-Pk` (nombre de resultats). | `./gradlew queryRag -Pquestion="architecture hexagonale" -Pk=5` → 5 resultats. | 30m
+| T-2.2.3 | Formater les resultats : extrait + score de similarite + fichier source. | Chaque resultat contient `[score: 0.92] source: AGENT.adoc` suivi de l'extrait. | 1h
+| T-2.2.4 | Integrer LangChain4j pour reformuler la reponse en langage naturel. | La reponse finale est une synthese, pas juste une liste de snippets. | 2h
+| T-2.2.5 | Verifier que l'index existe avant de query. | Si pas d'index → "Aucun index RAG. Lancez `indexCodebase` d'abord." | 30m
+| T-2.2.6 | Test d'integration : indexer → query → verifier pertinence des resultats. | Cycle complet OK. | 30m
+|===
+
+==== US-4.1 — Tests TestKit (5 pts)
+
+En tant que developpeur, je veux des tests TestKit pour valider que le plugin s'applique et que les taches fonctionnent.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-4.1.1 | Ecrire `PluginFunctionalTest.kt` : appliquer le plugin sur un projet Gradle vide. | `./gradlew functionalTest` → test passe, aucune exception. | 45m
+| T-4.1.2 | Verifier que toutes les taches sont enregistrees apres `apply`. | `runner.tasks.getByName("aggregateGraphs")` → pas d'exception. | 30m
+| T-4.1.3 | Ecrire `ShellTaskTest.kt` : mocker `ShellExecutor`, verifier que la tache l'appelle avec les bons parametres. | `shellTask.execute()` → `shellExecutor.execute("./gradlew aggregateGraphs")` appele. | 1h
+| T-4.1.4 | Ecrire test d'erreur : `ShellResult(exitCode=1, stderr="...")` → exception levee avec message formate. | Tache echoue → exception avec message lisible. | 30m
+| T-4.1.5 | Ecrire test timeout : `shellExecutor` simule timeout → tache tuee proprement. | Timeout atteint → `ShellTimeoutException` levee. | 30m
+| T-4.1.6 | Ecrire test CI/CD : mode --ci → intention ecrite + commit cree (mock git). | `CiCdTask` ecrit le JSON intention, appelle commit. | 45m
+| T-4.1.7 | Couverture > 80% sur le code source du plugin. | Rapport jacoco ou kover. | 30m
+|===
+
+==== US-4.2 — CI GitHub Actions (2 pts)
+
+En tant que developpeur, je veux une CI GitHub Actions qui build et teste a chaque PR.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-4.2.1 | Creer `.github/workflows/build.yml` dans engine/. | Fichier present. | 15m
+| T-4.2.2 | Workflow : checkout → setup-java 25 → `./gradlew :waiter-plugin:build` → `./gradlew :waiter-plugin:functionalTest`. | PR → build + tests declenches automatiquement. | 30m
+| T-4.2.3 | Ajouter linting : `./gradlew :waiter-plugin:ktlintCheck` (optionnel). | PR avec code mal formaté → CI echoue. | 30m
+| T-4.2.4 | Verifier que le workflow passe sur une PR de test. | PR test → build vert. | 15m
+|===
+
+==== US-4.3 — Publication Plugin Portal (2 pts)
+
+En tant que developpeur, je veux publier `com.cheroliv.waiter` sur le Gradle Plugin Portal.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-4.3.1 | Configurer les credentials Plugin Portal dans `build.gradle.kts`. | `gradlePlugin { ... }` contient le bloc de publication. | 30m
+| T-4.3.2 | Generer les cles API sur plugins.gradle.org. | Cles stockees dans GitHub Secrets ou `~/.gradle/gradle.properties`. | 30m
+| T-4.3.3 | Executer `./gradlew :waiter-plugin:publishPlugins`. | Plugin disponible sur https://plugins.gradle.org/plugin/com.cheroliv.waiter. | 15m
+| T-4.3.4 | Verifier que le plugin est listable : `gradlePluginPortal()` → `id("com.cheroliv.waiter")`. | Projet externe peut appliquer le plugin. | 15m
+| T-4.3.5 | Documenter la procedure de publication dans `.agents/`. | Procedure ecrite, reproductible. | 15m
+|===
+
+*Criteres d'acceptation :*
+- `./gradlew queryRag -Pquestion="..."` → repond avec extraits + synthese
+- `./gradlew test` + `./gradlew functionalTest` → all green, coverage > 80%
+- `.github/workflows/build.yml` → CI verte sur PR
+- Plugin listable sur plugins.gradle.org
+
+
+=== Sprint 6 — EPIC-2 Codex (13 pts)
+
+*Objectif* : Pipeline complet codex-gradle : extraction PDF/EPUB → ontology → knowledge base → RAG.
+
+==== US-2.3 — Codex alimente le RAG (13 pts)
+
+En tant que dogfooder, je veux que le pipeline codex (`extractBookStructure → deriveOntology → exportKnowledgeBase`) alimente automatiquement la base RAG.
+
+*Taches atomiques :*
+
+|===
+| ID | Tache | Verification | Estimation
+| T-2.3.1 | Importer codex-gradle via `includeBuild()` dans engine/build.gradle.kts. | `./gradlew tasks` liste les taches codex. | 15m
+| T-2.3.2 | Implementer `ExtractBookTask.kt` : wrapper shell vers `./gradlew extractBookStructure -Pinput=<pdf>`. | PDF fourni → extraction → chapitres + texte identifies. | 1h
+| T-2.3.3 | Implementer `DeriveOntologyTask.kt` : wrapper shell vers la tache ontology codex. | Texte extrait → classes + relations detectees → JSON-LD produit. | 1h30m
+| T-2.3.4 | Implementer `ExportKnowledgeBaseTask.kt` : wrapper shell vers l'export pgvector. | Ontologie → embeddings ONNX → insertion pgvector. | 1h30m
+| T-2.3.5 | Implementer `IngestBookPipelineTask.kt` : orchestration des 3 etapes en sequence. | `./gradlew ingestBook -Pinput=livre.pdf` → extraction → ontology → indexation. | 2h
+| T-2.3.6 | Gerer les livres multiples : `ingestBook -PinputDir=livres/` traite tous les PDFs du repertoire. | 10 PDFs → 10 pipelines executes. | 45m
+| T-2.3.7 | Verifier l'integration avec le RAG : apres ingestion, `queryRag` retrouve le contenu du livre. | Ingestion livre X → `queryRag -Pquestion="concept du livre X"` → reponse pertinente. | 30m
+| T-2.3.8 | Optimiser pour le mode CI/CD uniquement (les PDFs lourds ecrasent la RAM locale). | `ingestBook` force `--mode=ci` → commit+push automatique. | 30m
+| T-2.3.9 | Test end-to-end : PDF test → pipeline complet → RAG requetable. | Cycle complet OK, resultats verifies. | 30m
+|===
+
+*Criteres d'acceptation :*
+- `./gradlew ingestBook -Pinput=livre.pdf` → extraction → ontology → index pgvector → confirmation
+- `./gradlew queryRag -Pquestion="theorie du livre"` → repond avec des extraits du livre
+- Mode CI/CD par defaut pour les PDFs > 10 Mo
+- Pipeline fonctionnel sans intervention manuelle
+
+
+== Recapitulatif Global
+
+|===
+| Sprint | EPIC | US | Taches | Points | Duree
+| Sprint 1 | EPIC-0 Onboarding | 4 | 14 | 9 | 2-3 jours
+| Sprint 2 | EPIC-1 Execution (part 1) | 3 | 14 | 12 | 3-4 jours
+| Sprint 3 | EPIC-1 Execution (part 2) | 2 | 13 | 10 | 2-3 jours
+| Sprint 4 | EPIC-2 RAG (part 1) + EPIC-3 Publication | 3 | 16 | 10 | 2-3 jours
+| Sprint 5 | EPIC-2 RAG (part 2) + EPIC-4 Qualite | 4 | 22 | 17 | 5-7 jours
+| Sprint 6 | EPIC-2 Codex | 1 | 9 | 13 | 5-7 jours
+| *Total* | *5 EPICs* | *17 US* | *88 taches* | *71 pts* | ~20-30 jours
+|===

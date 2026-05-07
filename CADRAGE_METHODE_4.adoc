@@ -1,0 +1,70 @@
+= Cadrage Méthode 4 — DSL, Conventions, Moodboard — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Cadrage Méthode 4 — DSL & Conventions
+:summary: DSL Gradle convention-based, conventions foundry, style.
+
+== 1. DSL du plugin
+
+Le plugin est convention-based : zero configuration necessaire. La DSL permet de surcharger si besoin.
+
+[source,kotlin]
+----
+plugins {
+    id("com.cheroliv.waiter") version "0.1.0"
+}
+
+engine {
+    // Optionnel — chemin absolu vers engine (detecte automatiquement)
+    enginePath.set(project.layout.projectDirectory)
+
+    // Optionnel — timeout par tache en secondes (defaut: 300)
+    taskTimeout.set(300)
+
+    // Optionnel — groupe de taches a exposer (defaut: all)
+    taskGroup.set("foundry")
+}
+----
+
+=== Valeurs par défaut
+
+|===
+| Propriete | Valeur par defaut | Source
+| `enginePath` | `project.rootDir` si le projet s'appelle "engine" | `project.name`
+| `taskTimeout` | `300` secondes | constante
+| `taskGroup` | `null` = toutes les taches | pas de filtre
+|===
+
+=== Taches exposées
+
+|===
+| Task Gradle | Action | Type
+| `tasks` | Liste toutes les taches disponibles | decouverte JIT
+| `{nom_tache}` | Execute la tache shell locale | execution synchrone
+| `{nom_tache} --mode=ci` | Deporte sur CI/CD via commit+push | execution asynchrone
+|===
+
+== 2. Moodboard — Conventions et style
+
+=== Conventions issues de l'ecosysteme foundry
+
+|===
+| Convention | Regle
+| Langage | Kotlin (pas de Groovy, pas de Java)
+| Build | `kotlin-dsl` + `java-gradle-plugin`
+| Architecture | Hexagonale minimale
+| Tests | TestKit (functional test sur Gradle runner)
+| Publication | Plugin Portal (`com.cheroliv.waiter`)
+| License | Apache 2.0
+| Versionnement | SemVer strict
+| Documentation | `.agents/` (AGENT.adoc, INDEX.adoc, etc.)
+| Git | Conventionnel commits, pas de push force
+| CI | GitHub Actions, build reproductible avec Gradle Wrapper
+| Tool-agnostique | Zero adherence a un outil consommateur specifique
+|===
+
+=== Style du plugin
+
+- *Zero fichier de config* : la decouverte est JIT via `./gradlew tasks`
+- *Zero serialisation specifique* : stdout texte brut (parse par le consommateur)
+- *Protocole Git natif* : commit+push herite du protocole documente dans `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`

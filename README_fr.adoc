@@ -1,0 +1,179 @@
+= waiter-plugin — Point d'entree unique pour piloter l'ecosysteme foundry
+:source-highlighter: rouge
+:toc: left
+:toclevels: 3
+:icons: font
+
+image:https://img.shields.io/badge/license-Apache%202.0-blue[Apache 2.0, link=https://www.apache.org/licenses/LICENSE-2.0]
+
+Le plugin `com.cheroliv.waiter` est le point d'entrée unique pour piloter les 15+ plugins Gradle
+de l'écosystème foundry. Tool-agnostique par conception : l'interface est un simple `./gradlew {tâche}`.
+Aucune dépendance à un outil consommateur spécifique. L'interchangeabilité est garantie par les fichiers
+`.agents/*.adoc` que tout agent LangChain4j sait ingérer.
+
+== Conception tool-agnostique
+
+Le plugin ne dépend ni de open-webui, ni d'opencode, ni d'aucun outil propriétaire. Deux interfaces
+seulement :
+
+. Shell POSIX : `./gradlew -p engine {tâche}` — stdout texte brut, parse par le consommateur
+. Protocole Git : commit + push → CI/CD GitHub Actions → `git pull` du résultat
+
+Tout agent capable de `Runtime.exec()` ou de `git pull` peut consommer ce plugin.
+Les fichiers `.agents/*.adoc` contiennent les règles, la roadmap et le contexte de session,
+ingérables par n'importe quel agent LangChain4j pour reproduire le comportement.
+
+== Prerequisites
+
+. https://sdkman.io/[SDKMAN]
+. JDK 25+ (`sdk install java 25.0.1-graal`)
+. https://docs.docker.com/engine/install/[Docker] (optionnel, pour `docker compose`)
+. https://ollama.com/[Ollama] (optionnel, pour les plugins LLM)
+
+== Installation
+
+=== Méthode 1 : JDK local (recommandée pour le développement)
+
+[source,shell]
+----
+sdk install java 25.0.1-graal
+git clone https://github.com/cheroliv/engine
+cd engine
+./gradlew tasks
+----
+
+=== Méthode 2 : Docker Compose
+
+[source,shell]
+----
+git clone https://github.com/cheroliv/engine
+cd engine
+docker compose up -d
+----
+
+L'interface open-webui est accessible sur http://localhost:3333. L'engine est monté en `/engine`
+en lecture seule (`:ro`). Les tâches lourdes sont déportées sur CI/CD — pas besoin d'écriture
+dans l'engine depuis le conteneur.
+
+== Utilisation
+
+=== Découverte de tâches
+
+[source,shell]
+----
+./gradlew tasks
+----
+
+Retourne la liste complète des tâches disponibles dans l'engine.
+
+=== Exécution locale (feedback synchrone)
+
+[source,shell]
+----
+./gradlew aggregateGraphs
+./gradlew decomposeIntention -Pintention="préparer une conférence sur l'architecture hexagonale"
+./gradlew indexCodebase
+./gradlew publishSite
+./gradlew serveDeck
+----
+
+Le Gradle Daemon assure un hot-start après le premier appel (< 2 secondes).
+
+=== Déport CI/CD (canal principal)
+
+[source,shell]
+----
+./gradlew aggregateGraphs --mode=ci
+./gradlew decomposeIntention -Pintention="générer un dataset fine-tuning" --mode=ci
+----
+
+Le flag `--mode=ci` sérialise l'intention, commit + push, déclenche un workflow GitHub Actions
+sur les runners cloud (CPU illimité, GPU disponible), puis le résultat revient par commit Git.
+Audit intégral via `git log`.
+
+== Architecture
+
+=== Stack
+
+|===
+| Couche | Choix
+| Langage | Kotlin 2.1+
+| Build | Gradle 8.x + `kotlin-dsl`
+| Framework | `java-gradle-plugin`
+| Tests | Gradle TestKit + JUnit 5
+| CI | GitHub Actions
+| Licence | Apache 2.0
+|===
+
+=== Écosystème foundry
+
+```
+N3 engine/
+   ├── includeBuild("graphify")           ← N0
+   ├── includeBuild("codebase")           ← N1
+   ├── includeBuild("planner")            ← N2
+   ├── includeBuild("plantuml")           ← N2
+   ├── includeBuild("slider")             ← N2
+   ├── includeBuild("bakery")             ← N2
+   ├── includeBuild("readme")             ← N2
+   ├── includeBuild("newpipe")            ← N2
+   ├── includeBuild("saas-deploy")        ← N2
+   ├── includeBuild("codex")              ← N2
+   ├── includeBuild("quizz-benchmark")    ← N2
+   ├── includeBuild("jhipster")           ← N2
+   ├── includeBuild("training")           ← N2
+   ├── includeBuild("notebook")           ← N2
+   └── include("waiter-plugin")           ← ce plugin (N3)
+```
+
+=== Protocole Git
+
+Le commit + push est le protocole de communication asynchrone universel de l'écosystème.
+Documenté exhaustivement dans `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`.
+
+Format du commit :
+
+[source]
+----
+<type>(<scope>): <description>
+
+[STATUS]
+executed_by: ci-runner-42
+model: deepseek-v4-pro
+duration_ms: 127043
+timestamp: 2026-05-07T14:32:01Z
+----
+
+Le sujet est lisible par l'humain. Le corps contient la payload JSON structurée.
+Le SHA est l'identifiant unique du message. Le `git log` est l'historique de la
+conversation entre agents. Zéro middleware, zéro webhook, zéro file d'attente.
+
+=== Trois niveaux d'asynchronie absorbés
+
+. *Temporelle* — le runner exécute à 3h du matin, le développeur lit le résultat à 9h. Le commit attend.
+. *Spatiale* — le runner est sur GitHub Actions (US), le développeur est en France. Le push traverse l'Atlantique.
+. *Outil* — le runner utilise Gradle, le développeur utilise le terminal, l'agent utilise LangChain4j. Tous lisent Git.
+
+== Roadmap
+
+|===
+| Sprint | EPIC | Points | Statut
+| Sprint 1 | EPIC-0 Onboarding | 9 | À faire
+| Sprint 2 | EPIC-1 Execution (part 1) | 12 | À faire
+| Sprint 3 | EPIC-1 Execution (part 2) | 10 | À faire
+| Sprint 4 | EPIC-2 RAG + EPIC-3 Publication | 10 | À faire
+| Sprint 5 | EPIC-2 RAG (suite) + EPIC-4 Qualité | 17 | À faire
+| Sprint 6 | EPIC-2 Codex | 13 | À faire
+| *Total* | *5 EPICs, 17 US, 88 tâches* | *71* |
+|===
+
+Détail complet dans `CADRAGE_METHODE_8.adoc`.
+
+== Licence
+
+Apache 2.0 — voir le fichier link:LICENSE[LICENSE].
+
+== Liens
+
+* https://github.com/cheroliv/engine[GitHub]
+* https://plugins.gradle.org/plugin/com.cheroliv.waiter[Gradle Plugin Portal]

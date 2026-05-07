@@ -1,0 +1,58 @@
+= Atelier 1 — Vision — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Atelier 1 — Vision
+:summary: QQOQCP + Product Vision Board, tool-agnostique.
+
+
+== QQOQCP
+
+|===
+| Q | Question | Réponse
+| QUI | Qui sont les utilisateurs cibles ? | Développeurs JVM, moi-même (CherOliv, dogfooder) en premier. Apprenants en formation. Curieux découvrant via YouTube. Créateurs de contenu assisté.
+| QUOI | Qu'est-ce que le produit ? | Un plugin Gradle Kotlin dans l'engine N3 qui expose toutes les tâches de la fonderie (N0→N1→N2) via deux canaux tool-agnostiques : shell local (`./gradlew {task}`) et protocole Git commit+push (CI/CD). Zéro middleware. Le plugin ne dépend d'aucun outil consommateur — tout agent capable de shell-out ou de `git pull` peut l'utiliser. L'interchangeabilité est garantie par les fichiers `.agents/*.adoc` que tout agent LangChain4j sait ingérer pour reproduire le comportement.
+| OÙ | Où sera-t-il utilisé ? | N'importe quelle machine avec un JDK (SDKMAN) : poste local, VM de formation, VPS. Le point d'accès est l'engine cloné (`github.com/cheroliv/engine`), pas un service ou une API. Consommation locale via `./gradlew`, consommation distante via `git pull` du commit résultat.
+| QUAND | Quand en aura-t-on besoin ? | Dès qu'un développeur ou un agent veut interagir avec les plugins foundry — génération de diagrammes, création de decks, indexation de codebase, déploiement SaaS, etc. — sans introduire de stack étrangère.
+| COMMENT | Comment ça fonctionne ? | `git clone engine` → `./gradlew {task}`. Découverte JIT des tâches via `./gradlew tasks`. Canal principal : commit+push → CI/CD GitHub Actions (déport du CPU/GPU/RAM). Canal secondaire : shell synchrone local (feedback immédiat). Zéro configuration, zéro adhérence à un outil.
+| POURQUOI | Pourquoi le faire ? | Éliminer la prolifération de scripts Python, wrappers ad-hoc, configs MCP, serveurs Ktor et autres stacks étrangères. Tout reste en JVM/Kotlin/Gradle. Un seul `git clone` suffit. L'indépendance vis-à-vis de tout outil consommateur garantit la pérennité.
+|===
+
+
+== Product Vision Board
+
+=== Target Group
+
+. *Créateur dogfooder* (CherOliv) — auteur de l'écosystème, utilise ses propres plugins pour produire du contenu
+. *Apprenants* en session de formation — découvrent le pilotage par langage naturel d'une fonderie Gradle
+. *Curieux YouTube* — reproduisent une démo en < 5 minutes, sans stack exotique
+. *Agents LLM* (LangChain4j) — consomment les tâches en ingérant les fichiers `.agents/*.adoc`
+
+=== Needs (5 besoins principaux)
+
+. *Découvrir* les tâches disponibles dynamiquement (`./gradlew tasks`), sans fichier de config
+. *Exécuter* toute tâche de l'engine N3 depuis n'importe quel agent capable de shell-out
+. *Zéro nouvelle stack* : pas de Python, pas de pip, pas de Node, pas de MCP, pas de Ktor
+. *Onboarding unique* : `sdk install java` + `git clone engine`. Rien d'autre.
+. *Indépendance outil* : fonctionne avec open-webui, opencode, un script shell, ou un agent LangChain4j — le même appel shell produit le même résultat.
+
+=== Product (5 fonctionnalités principales)
+
+. *Shell wrapper universel* — `./gradlew -p /path/to/engine {task}`. Zéro protocole réseau, zéro sérialisation.
+. *Protocole Git natif* — commit+push comme canal CI/CD, hérité de `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`
+. *Découverte JIT* — `./gradlew tasks` → parsing → liste des capacités. Aucune config statique.
+. *Gradle Daemon* — 1er appel cold-start (~10s), appels suivants < 1s. Transparent pour le consommateur.
+. *Publication Plugin Portal* — `com.cheroliv.waiter` clonable et utilisable publiquement.
+
+=== Business Goal (critères de succès)
+
+. *100% JVM/Kotlin/Gradle* — aucune ligne de code hors de cet écosystème
+. *Open source Apache 2.0* sur `github.com/cheroliv/engine`
+. *Onboarding 2 commandes* : SDKMAN + git clone
+. *Couverture exhaustive* : tous les plugins N0/N1/N2 accessibles via le même shell wrapper
+. *Tool-agnostique* : le même `./gradlew` fonctionne quel que soit le consommateur — l'interchangeabilité est dans les `.agents/*.adoc` ingérables par tout agent LangChain4j
+
+=== Vision
+
+"Pour tout développeur JVM ou agent LLM, le plugin engine est le point d'entrée unique qui transforme la fonderie foundry — 15+ plugins Gradle couvrant la génération de diagrammes, de présentations, l'indexation de codebase, le déploiement SaaS, et tout métier embrassé par Gradle — en capacités pilotables via un simple appel shell, sans jamais quitter la stack JVM, sans adhérence à aucun outil consommateur."
+
+*Au-delà de l'outil : une expérience de création de contenu complète.* Le workspace n'est pas un simple répertoire de code. C'est un atelier de création numérique où l'architecture physique (`foundry/OSS/`, `office/sites/`, `configuration/`) et le protocole Git (commit+push comme communication universelle) s'articulent pour offrir un flux de travail continu : intention → planification → génération multi-format → révision itérative → publication. Le plugin engine est le chaînon manquant qui rend cette fonderie pilotable par n'importe quel agent, humain ou LLM, sans jamais introduire une dépendance à un écosystème propriétaire.

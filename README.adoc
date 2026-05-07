@@ -1,0 +1,105 @@
+= waiter-plugin — Point d'entree unique pour piloter l'ecosysteme foundry
+:source-highlighter: rouge
+:toc: left
+:toclevels: 3
+:icons: font
+
+image:https://img.shields.io/badge/license-Apache%202.0-blue[Apache 2.0, link=https://www.apache.org/licenses/LICENSE-2.0]
+
+Le plugin `com.cheroliv.waiter` est le point d'entrée unique pour piloter les 15+ plugins Gradle de
+l'ecosysteme foundry. Tool-agnostique par conception : zero dependance a un outil consommateur specifique.
+
+== Interfaces
+
+Deux canaux de communication, aucun middleware :
+
+|===
+| Canal | Protocole | Usage
+| *Synchrone* | stdout POSIX (`./gradlew {task}`) | Feedback immediat, dev local, demo
+| *CI/CD* (canal principal) | Commit + push Git → GitHub Actions | Execution deportee, audit integral, overnight
+|===
+
+== Prerequis
+
+. https://sdkman.io/[SDKMAN]
+. JDK 25+ (`sdk install java 25.0.1-graal`)
+. https://docs.docker.com/engine/install/[Docker] (optionnel, pour `docker compose`)
+. https://ollama.com/[Ollama] (optionnel, pour les plugins LLM)
+
+== Installation
+
+=== Methode 1 : JDK local (recommandee pour le dev)
+
+[source,shell]
+----
+sdk install java 25.0.1-graal
+git clone https://github.com/cheroliv/engine
+cd engine
+./gradlew tasks
+----
+
+=== Methode 2 : Docker Compose
+
+[source,shell]
+----
+git clone https://github.com/cheroliv/engine
+cd engine
+docker compose up -d
+----
+
+open-webui accessible sur http://localhost:3333. L'engine est monte en `/engine` (`:ro`).
+
+== Usage rapide
+
+[source,shell]
+----
+# Decouvrir les taches disponibles
+./gradlew tasks
+
+# Execution locale (feedback immediat)
+./gradlew aggregateGraphs
+./gradlew decomposeIntention -Pintention="creer un site JBake"
+./gradlew indexCodebase
+./gradlew publishSite
+
+# Deport CI/CD (canal principal, sans consommer CPU/RAM locales)
+./gradlew aggregateGraphs --mode=ci
+----
+
+== Ecosysteme
+
+Engine s'appuie sur l'architecture physique du workspace foundry et orchestre les plugins :
+
+|===
+| DAG | Plugin | Description
+| N0 | graphify | Graphe de connaissance
+| N1 | codebase | Fine-tuning, RAG pgvector, ONNX, BYOK
+| N2 | planner | Decomposition d'intention en plan [EPIC][US][TASK]
+| N2 | plantuml | Generation de diagrammes via LLM
+| N2 | slider | Creates decks Reveal.js a partir d'AsciiDoc
+| N2 | bakery | Publication de sites statiques JBake
+| N2 | readme | Generation automatique de README
+| N2 | newpipe | Telechargement YouTube via NewPipeExtractor
+| N2 | saas-deploy | Deploiement SaaS edster
+| N2 | codex | Extraction de documents PDF/EPUB
+| N2 | quizz-benchmark | Benchmark et quiz LLM
+| N2 | jhipster | Plugins JHipster (persistence, assistant)
+| N2 | training | Extraction de structures pedagogiques
+| N2 | notebook | Observabilite Google Colab
+| N3 | waiter-plugin | Point d'entree unique, orchestration
+|===
+
+== Protocole Git
+
+Le commit + push est le protocole de communication asynchrone universel de l'ecosysteme.
+Documente dans `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`. Zéro middleware, zéro webhook.
+Juste Git.
+
+== Licence
+
+Apache 2.0 — voir le fichier link:LICENSE[LICENSE].
+
+== Liens
+
+* https://github.com/cheroliv/engine[GitHub]
+* https://plugins.gradle.org/plugin/com.cheroliv.waiter[Gradle Plugin Portal]

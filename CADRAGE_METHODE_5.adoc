@@ -1,0 +1,82 @@
+= Cadrage Méthode 5 — Story Mapping / User Stories — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Cadrage Méthode 5 — Story Mapping & User Stories
+:summary: Story mapping priorise, US format standard.
+
+== Story Mapping (priorise)
+
+=== EPIC 0 — Onboarding
+
+[cols="1,3,1,1", options="header"]
+|===
+| Prio | User Story | Persona | Valeur
+| P0 | En tant que developpeur, je veux `git clone engine && ./gradlew tasks` afin d'avoir la liste des taches disponibles. | Tous | Critique
+| P0 | En tant que developpeur, je veux Docker Compose avec l'engine monte en volume afin d'avoir un environnement pret a l'emploi. | Tous | Critique
+| P1 | En tant que developpeur, je veux un README decrivant les prerequis et les commandes. | Curieux YouTube, Apprenant | Haute
+|===
+
+=== EPIC 1 — Execution de tâches
+
+[cols="1,3,1,1", options="header"]
+|===
+| Prio | User Story | Persona | Valeur
+| P0 | En tant qu'utilisateur, je veux `./gradlew aggregateGraphs` afin d'obtenir le diagramme du DAG foundry. | Createur, Dogfooder | Critique
+| P0 | En tant que createur, je veux `./gradlew decomposeIntention -Pintention="..."` afin d'obtenir un plan structure [EPIC][US][TASK]. | Createur | Critique
+| P1 | En tant qu'utilisateur, je veux `./gradlew {tache} --mode=ci` afin de deporter l'execution sur GitHub Actions. | Tous | Haute
+| P1 | En tant qu'utilisateur, je veux un message d'erreur lisible si une tache echoue. | Tous | Haute
+| P2 | En tant qu'utilisateur, je veux un timeout configurable par tache. | Tous | Moyenne
+|===
+
+=== EPIC 2 — RAG et Contexte
+
+[cols="1,3,1,1", options="header"]
+|===
+| Prio | User Story | Persona | Valeur
+| P0 | En tant que createur, je veux `./gradlew indexCodebase` afin d'indexer ma codebase dans le RAG. | Createur, Dogfooder | Critique
+| P1 | En tant que createur, je veux interroger le RAG (`./gradlew queryRag -Pquestion="..."`) afin d'enrichir mon contenu. | Createur | Haute
+| P2 | En tant que dogfooder, je veux que codex alimente le RAG en amont. | Dogfooder | Basse
+|===
+
+=== EPIC 3 — Publication
+
+[cols="1,3,1,1", options="header"]
+|===
+| Prio | User Story | Persona | Valeur
+| P0 | En tant que createur, je veux `./gradlew publishSite` afin de publier un site/deck/article. | Createur | Critique
+| P1 | En tant que createur, je veux `./gradlew serveDeck` afin de previsualiser avant publication. | Createur, Apprenant | Haute
+|===
+
+=== EPIC 4 — Qualite et robustesse
+
+[cols="1,3,1,1", options="header"]
+|===
+| Prio | User Story | Persona | Valeur
+| P0 | En tant que developeur, je veux des tests TestKit pour valider le plugin. | Dogfooder | Critique
+| P1 | En tant que developeur, je veux la CI GitHub Actions sur chaque PR. | Dogfooder | Haute
+| P2 | En tant que developeur, je veux publier sur le Gradle Plugin Portal. | Dogfooder | Moyenne
+|===
+
+== Dependances inter-EPICs
+
+[plantuml]
+----
+@startuml
+rectangle "EPIC-0\nOnboarding" as E0 #LightGreen
+rectangle "EPIC-1\nExecution" as E1 #LightBlue
+rectangle "EPIC-2\nRAG" as E2 #Pink
+rectangle "EPIC-3\nPublication" as E3 #Yellow
+rectangle "EPIC-4\nQualite" as E4 #LightGray
+
+E0 --> E1
+E0 --> E2
+E1 --> E3
+E2 --> E3
+E4 ..> E0
+E4 ..> E1
+E4 ..> E2
+E4 ..> E3
+@enduml
+----
+
+Ordre de realisation : EPIC-0 → EPIC-1 → EPIC-4 (en continu) → EPIC-2 → EPIC-3

@@ -1,0 +1,27 @@
+= SESSION_PROCEDURE — waiter-plugin
+
+_Procedure standard 6 etapes de fin de session._
+
+== Etape 1 — Rapport de session
+Fichier : `.agents/sessions/NNN-sujet.adoc`
+Format : voir modele dans INDEX.adoc → sessions existantes.
+
+== Etape 2 — Contexte reprise
+Fichier : `PROMPT_REPRISE.adoc`
+Max 70 lignes. Contient : session de destination, contexte precedent, mission, sous-taches, protocole.
+
+== Etape 3 — Dashboard
+Fichier : `.agents/INDEX.adoc`
+MAJ : numero de session +1, roadmap, statut EPICs, portefeuille.
+
+== Etape 4 — Historique
+Fichier : `.agents/SESSIONS_HISTORY.adoc`
+Ajouter une ligne dans le tableau avec #, date, type, sujet, score.
+
+== Etape 5 — Verification
+- `git status` (propre)
+- `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` → vide
+- Protocole Git conforme a AUGMENTED_CONTEXT_PIPELINE.adoc
+
+== Etape 6 — Commit manuel
+RAPPEL : AUCUN commit automatique. Attendre la permission explicite de l'utilisateur.

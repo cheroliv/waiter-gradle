@@ -1,0 +1,399 @@
+= Cadrage Méthode 7 — Technique & Architecture — waiter-plugin
+@CherOliv
+2026-05-07
+:jbake-title: Cadrage Méthode 7 — Technique & Architecture
+:summary: Stack, architecture, integration, flux, securite.
+
+
+== Stack technique
+
+|===
+| Couche | Choix | Justification
+| Langage | Kotlin 2.1+ | Coherence ecosysteme foundry (100% Kotlin)
+| Build | Gradle 8.x + `kotlin-dsl` | Meme systeme que les 15+ plugins
+| Plugin framework | `java-gradle-plugin` | Publication Plugin Portal native
+| Tests | Gradle TestKit | Tests fonctionnels sur vrai runner Gradle
+| Assertions | JUnit 5 | Coherence foundry
+| CI | GitHub Actions | Gratuit, integre
+| Container | Docker (`ghcr.io/open-webui/open-webui:main`) | Base image, JDK ajoute
+| Protocole | Shell POSIX + Git commit+push | Zero serialisation specifique
+|===
+
+=== Fondation : architecture physique du workspace
+
+Le plugin s'appuie sur l'existant. Sa coherence repose sur l'organisation physique du workspace.
+
+|===
+| Element du workspace | Role pour le plugin
+| `AGENTS.md` (racine) | Hook d'ouverture standardise, regles transverses, 5 boroughs
+| `foundry/OSS/engine/` (N3) | Point d'agregation ou le plugin est integre
+| `foundry/OSS/*/` (N0→N2) | Les 15+ plugins dont les taches sont exposees
+| `office/sites/` | Contenu publie par bakery, alimente par les taches CI/CD
+| `configuration/` (circle 1) | Secrets, jamais exposes
+| `SESSION_CHECKLIST.adoc` | Procedure ouverture/fermeture standard
+| `PROMPT_REPRISE.adoc` | Contexte de reprise entre sessions de dev
+| Protocole Git (commit+push) | Documente dans `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`
+| `github.com/cheroliv/engine` | Depot public, clonable
+|===
+
+Le plugin est un maillon — pas une ile. Sans le workspace, sans l'engine, sans les plugins N0→N2, sans le protocole Git documente, il n'a aucune raison d'etre.
+
+=== Technologies ecartees
+
+|===
+| Technologie | Raison de l'exclusion
+| Python / pip | Stack etrangere a la JVM
+| Node.js / npm | Stack etrangere a la JVM
+| MCP (Model Context Protocol) | Protocole Anthropic, serialisation reseau inutile
+| Ktor / serveur HTTP | Aucune communication reseau necessaire
+| YAML / JSON de config | Aucun fichier de config : decouverte JIT via `./gradlew tasks`
+| gRPC / Protobuf | Overkill pour un shell wrapper
+|===
+
+== Architecture
+
+=== Pattern : Hexagonal minimal
+
+```
+┌──────────────────────────────────────────────────┐
+│  WaiterPlugin.kt (entry point)                   │
+│  ┌────────────────────────────────────────────┐  │
+│  │  Extension DSL  │  Task Registration       │  │
+│  │  EngineDsl.kt    │  ShellTask.kt           │  │
+│  │                  │  CiCdTask.kt            │  │
+│  └────────────────────────────────────────────┘  │
+│                      │                           │
+│  ┌───────────────────┴────────────────────────┐  │
+│  │  Port: ShellExecutor (interface)           │  │
+│  │  Adapter: NativeProcessShellExecutor       │  │
+│  └────────────────────────────────────────────┘  │
+│                      │                           │
+└──────────────────────┼───────────────────────────┘
+                       │
+        ┌──────────────┴──────────────┐
+        │  ProcessBuilder / exec      │
+        │  ./gradlew -p engine ...    │
+        └─────────────────────────────┘
+```
+
+Le port `ShellExecutor` est la seule abstraction. Implementation `NativeProcessShellExecutor` wrap `ProcessBuilder`.
+
+=== Diagramme de classes
+
+[plantuml]
+----
+@startuml
+interface ShellExecutor {
+  + execute(command: String, timeout: Duration): ShellResult
+}
+
+class NativeProcessShellExecutor implements ShellExecutor {
+  - processBuilder: ProcessBuilder
+}
+
+class ShellResult {
+  + exitCode: Int
+  + stdout: String
+  + stderr: String
+  + duration: Duration
+}
+
+class WaiterPlugin : Plugin<Project> {
+  + apply(project: Project)
+}
+
+class ShellTask : DefaultTask {
+  - taskName: Property<String>
+  - enginePath: DirectoryProperty
+  + execute(): ShellResult
+}
+
+class CiCdTask : DefaultTask {
+  - taskName: Property<String>
+  - enginePath: DirectoryProperty
+  + execute(): ShellResult
+}
+
+WaiterPlugin --> ShellTask : registers
+WaiterPlugin --> CiCdTask : registers
+ShellTask --> ShellExecutor : uses
+CiCdTask --> ShellExecutor : uses
+@enduml
+----
+
+== Integration dans l'engine N3
+
+=== settings.gradle.kts (engine/)
+
+[source,kotlin]
+----
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "engine"
+
+// N0
+includeBuild("../graphify-gradle")
+// N1
+includeBuild("../codebase-gradle")
+// N2
+includeBuild("../planner-gradle/planner-plugin")
+includeBuild("../plantuml-gradle/plantuml-plugin")
+includeBuild("../slider-gradle/slider-plugin")
+includeBuild("../bakery-gradle/bakery-plugin")
+includeBuild("../readme-gradle/readme-plugin")
+// ... tous les autres plugins
+
+// N3 — ce plugin
+include("waiter-plugin")
+----
+
+=== build.gradle.kts (waiter-plugin/)
+
+[source,kotlin]
+----
+plugins {
+    `java-gradle-plugin`
+    `kotlin-dsl`
+    kotlin("jvm") version "2.1.0"
+}
+
+group = "com.cheroliv"
+version = "0.1.0"
+
+gradlePlugin {
+    plugins {
+        register("waiterPlugin") {
+            id = "com.cheroliv.waiter"
+            implementationClass = "com.cheroliv.waiter.WaiterPlugin"
+            displayName = "Engine Plugin"
+            description = "Point d'entree unique pour piloter l'ecosysteme foundry. Tool-agnostique."
+            tags.set(listOf("foundry", "engine", "gradle"))
+        }
+    }
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+}
+----
+
+== Flux de donnees
+
+=== Bootstrap
+
+[plantuml]
+----
+@startuml
+start
+:git clone engine;
+:./gradlew tasks;
+:Gradle scanne waiter-plugin + includeBuild();
+:Parse les taches disponibles;
+:Liste formatee (stdout);
+stop
+@enduml
+
+=== Runtime (execution locale)
+
+[plantuml]
+----
+@startuml
+start
+:Agent execute : ./gradlew -p engine {task};
+if (Gradle Daemon chaud ?) then (oui)
+  :Execution immediate (< 2s);
+else (non)
+  :Cold-start (~10s);
+endif
+:Gradle Daemon execute la tache;
+if (exitCode == 0 ?) then (oui)
+  :stdout → resultat;
+else (non)
+  :stderr → erreur formatee;
+endif
+stop
+@enduml
+
+=== Mode CI/CD (canal principal)
+
+[plantuml]
+----
+@startuml
+start
+:Agent execute : ./gradlew -p engine {task} --mode=ci;
+:Plugin commit l'intention → push;
+:push declenche workflow GitHub Actions;
+if (runner disponible ?) then (oui)
+  :Runner execute ./gradlew {task};
+  :Commit le resultat → push;
+else (non)
+  :Attente dans la queue GitHub Actions;
+endif
+:Agent execute : git pull;
+:Resultat disponible localement;
+stop
+@enduml
+
+== Le Commit + Push Comme Protocole de Communication
+
+Extrait canonique de `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`.
+
+Le commit + push est le seul protocole qui fonctionne dans *tous* les modes d'execution : local (`git log`), CI/CD (workflow → push), distant (autre machine), cross-agent (agent A commit, agent B pull). Zero middleware, zero queue, zero webhook. Juste Git.
+
+|===
+| Propriete | Explication
+| *Pas de configuration* | Pas de webhook a enregistrer. Pas de secret a partager. `git push` fonctionne partout.
+| *Pas de perte de message* | Un commit est persistant — il attend que quelqu'un le `pull`. Pas de timeout, pas de retry.
+| *Audit integre* | L'historique Git est l'historique des decisions. SHA chain infalsifiable.
+| *Double lisibilite* | Le sujet du commit est pour l'humain. Le corps pour la machine (JSON structure).
+| *Boucle automatique* | Un push peut declencher un workflow GitHub Actions (`on: push`).
+|===
+
+==== Format du commit
+
+[source]
+----
+<type>(<scope>): <description>
+
+[STATUS]
+executed_by: ci-runner-42
+model: deepseek-v4-pro
+duration_ms: 127043
+timestamp: 2026-05-06T14:32:01Z
+----
+
+==== Les Trois Niveaux d'Asynchronie
+
+. *Temporelle* — le runner execute a 3h, le dev lit a 9h. Le commit attend.
+. *Spatiale* — runner US, dev France. Le push traverse l'Atlantique.
+. *Outil* — runner Gradle, dev shell, agent LangChain4j. Tous lisent Git.
+
+==== Canaux de communication
+
+|===
+| Canal | Usage | Protocole
+| *Synchrone* | Taches legeres, feedback immediat | stdout POSIX (`./gradlew`)
+| *CI/CD* (principal) | Taches lourdes, overnight, fine-tuning | commit + push → GitHub Actions
+|===
+
+Le plugin expose les deux canaux via la meme commande. `--mode=ci` choisit le canal CI/CD.
+
+==== Workflow GitHub Actions
+
+[source,yaml]
+----
+name: Foundry CI Runner
+on:
+  push:
+    paths:
+      - 'intentions/**'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Tache Gradle a executer'
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+      - name: Execute la tache
+        run: ./gradlew ${{ inputs.task || 'executeIntention' }}
+      - name: Commit le resultat
+        if: success()
+        run: |
+          git config user.name "foundry-ci[bot]"
+          git config user.email "foundry-ci[bot]@cheroliv.com"
+          git add outputs/
+          git commit -m "feat(output): ${{ inputs.task }} completed"
+          git push
+----
+
+== Securite
+
+=== Principe : zero trust local
+
+Le tool shell est execute *localement* sur la machine de l'utilisateur. Aucune donnee ne transite par le reseau entre le consommateur et Gradle.
+
+*En mode CI/CD*, l'execution est deportee sur les runners GitHub Actions. Les secrets (API keys, tokens) sont geres par les GitHub Secrets du repo — ils ne transitent jamais par la machine locale.
+
+|===
+| Risque | Mitigation
+| Injection de commande | ProcessBuilder (pas de `sh -c` brut). Arguments echappes.
+| Execution destructive | Confirmation avant taches marquees `destructive`.
+| Fuite de secrets | `configuration/` (circle 1) non expose. `.gitignore` exclut `build/`.
+| Consommation ressources | Timeout configurable. Gradle Daemon limite en memoire.
+|===
+
+== Docker
+
+=== Structure
+
+[source]
+----
+engine/
+├── Dockerfile
+└── docker-compose.yaml
+----
+
+[source,dockerfile]
+----
+FROM ghcr.io/open-webui/open-webui:main
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-25-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+USER open-webui
+
+ENV JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+ENV ENGINE_PATH=/engine
+----
+
+[source,yaml]
+----
+# docker-compose.yaml
+services:
+  engine-powered:
+    build: .
+    ports:
+      - "3333:8080"
+    volumes:
+      - data:/app/backend/data
+      - ./:/engine:ro
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  data:
+----
+
+L'engine est monte en read-only (`:ro`). Les taches lourdes sont deportees sur CI/CD — pas besoin d'ecrire dans l'engine depuis le container.
+
+== Recapitulatif architectural
+
+|===
+| Aspect | Decision
+| Point d'entree | `com.cheroliv.waiter` — plugin Gradle dans engine/
+| Consommation | Shell POSIX (`./gradlew -p engine {task}`) ou `git pull`
+| Communication | stdout POSIX (sync) + commit+push Git (CI/CD, canal principal)
+| Performance | Gradle Daemon (cold → 10s / hot → < 2s) ; CI/CD illimite (runner GitHub)
+| Distribution | `git clone engine` + JDK local. Docker optionnel.
+| Tests | TestKit fonctionnel + JUnit
+| CI/CD | GitHub Actions → Plugin Portal
+| License | Apache 2.0
+| Tool-agnostique | Zero adherence. Meme commande quel que soit le consommateur.
+|===

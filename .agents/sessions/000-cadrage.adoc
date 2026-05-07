@@ -1,0 +1,37 @@
+= Session 000 — Cadrage Methodologique
+:date: 2026-05-07
+:type: cadrage
+:score: 10/10
+
+'''
+== Resume
+
+Cadrage complet du projet selon la methodologie Agile documentee dans `0054_memo_cadrage_post.adoc`.
+Projet renomme `waiter-plugin` — tool-agnostique par conception.
+
+== Ateliers Executes
+
+|===
+| Atelier | Sujet | Fichier
+| 1 | Vision | `CADRAGE_METHODE_1.adoc`
+| 2 | Personas (5, dont Agent LLM) | `CADRAGE_METHODE_2.adoc`
+| 3 | Zoning / Storyboard / Sitemap | `CADRAGE_METHODE_3.adoc`
+| 4 | DSL / Moodboard | `CADRAGE_METHODE_4.adoc`
+| 5 | Story Mapping / US | `CADRAGE_METHODE_5.adoc`
+| 6 | Backlog | `CADRAGE_METHODE_6.adoc`
+| 7 | Technique & Architecture | `CADRAGE_METHODE_7.adoc`
+| 8 | Sprint Planning & Atomicisation | `CADRAGE_METHODE_8.adoc`
+|===
+
+== Decisions Cle
+
+. *Tool-agnostique* : interfaces shell (`./gradlew`) + protocole Git (commit+push). Zero adherence a open-webui, opencode ou tout outil specifique.
+. *Plugin engine* : `com.cheroliv.waiter` dans engine N3. Point d'entree unique.
+. *Protocole Git* : commit+push comme canal de communication herite de `codex-gradle/AUGMENTED_CONTEXT_PIPELINE.adoc`
+. *Experience de creation de contenu complete* : intention → planification → generation → publication. Tout depuis le terminal.
+. *6 EPICs, 23 US* estimees et priorisees, Sprint 1 atomise en 23 taches.
+. *Open source Apache 2.0*, public sur `github.com/cheroliv/engine`
+
+== Prochaine Session
+
+001 — EPIC-0 Onboarding : bootstrap du plugin dans engine/.

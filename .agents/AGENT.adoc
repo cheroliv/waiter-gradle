@@ -1,0 +1,20 @@
+= waiter-plugin — Directives Agent
+:navtitle: DIRECTIVES AGENT
+:toc: left
+:icons: font
+
+Le **waiter-plugin** est le point d'entree unique pour piloter l'ecosysteme foundry.
+Tool-agnostique par conception : deux interfaces uniquement — shell local (`./gradlew {task}`) et protocole Git (commit+push → CI/CD).
+
+== Tech
+* Kotlin 2.1+, Gradle 8.x, `kotlin-dsl`
+* Publication : Plugin Portal (`com.cheroliv.waiter`)
+* Canaux : shell (stdout POSIX) + Git (commit+push CI/CD)
+* Interchangeabilite : fichiers `.agents/*.adoc` ingerables par tout agent LangChain4j
+
+== Regles
+* INTERDICTION de commit/push sans permission utilisateur
+* Lire TOUJOURS PROMPT_REPRISE.adoc en debut de session
+* Zero secret/codebase expose dans les descriptions de taches
+* Le protocole Git (commit+push) est le canal de communication par defaut
+* Zero adherence a un outil consommateur specifique
