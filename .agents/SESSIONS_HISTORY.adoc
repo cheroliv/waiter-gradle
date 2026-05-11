@@ -1,8 +1,0 @@
-= SESSIONS_HISTORY — waiter-plugin
-
-_Historique complet des sessions de developpement._
-
-|===
-| # | Date | Type | Sujet | Score
-| 000 | 2026-05-07 | cadrage | Cadrage Methodologique : 8 ateliers completes, renommage waiter-plugin, consolidation `.agents/`, tool-agnostique | 10/10
-|===

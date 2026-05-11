@@ -1,18 +1,19 @@
-= INDEX — waiter-plugin
+= INDEX — waiter-gradle
 :toc:
 
 _Regles absolues_ : voir `AGENT.adoc`
-_DAG_ : N3 — Plugin Gradle dans engine/ — point d'entree unique de la fonderie
+_DAG_ : N2 — Plugin Gradle consommateur waiter-plugin (pattern foundry/OSS standard)
 
-_Derniere mise a jour_ : 2026-05-07
+_Derniere mise a jour_ : 2026-05-11
 _Session en cours_ : 000 — Cadrage Methodologique (8 ateliers Cadrage Méthode)
-_Session terminee_ : —
+_Prochaine session_ : 001 — EPIC-0 Onboarding
+_Projet_ : `foundry/OSS/waiter-gradle/waiter-plugin/` — plugin sous waiter-gradle (pattern foundry/OSS standard)
 
 '''
 == REGLES ABSOLUES
 
 === 1. COMMITS/GIT — INTERDICTION FORMELLE sans permission
-=== 2. Le protocole Git (commit+push) est le canal de communication par defaut
+=== 2. DAG N2 — plugin Gradle waiter-plugin, consommable par engine N3
 === 3. Plugin publie sur Gradle Plugin Portal (`com.cheroliv.waiter`)
 === 4. PROCEDURE DE FIN DE SESSION — 6 ETAPES OBLIGATOIRES
 === 5. HOOK OUVERTURE — Checklist SESSION_CHECKLIST.adoc obligatoire
@@ -23,7 +24,7 @@ _Session terminee_ : —
 
 |===
 | # | Date | Type | Sujet | Score
-| 000 | 2026-05-07 | cadrage | Cadrage Methodologique : 8 ateliers (QQOQCP→Sprint Planning), `.agents/`, renommage waiter-plugin, tool-agnostique | 10/10
+| 000 | 2026-05-11 | cadrage+gouvernance | Cadrage Methodologique : 8 ateliers (QQOQCP→Sprint Planning), renommage waiter-plugin→waiter-gradle, migration gouvernance vers waiter-plugin/, remote GitHub cheroliv/waiter-gradle | 10/10
 |===
 
 '''
@@ -39,8 +40,8 @@ _Session terminee_ : —
 | C-6 | Backlog (23 US) | ✅ TERMINE | P1
 | C-7 | Technique & Architecture | ✅ TERMINE | P1
 | C-8 | Sprint Planning & Atomicisation | ✅ TERMINE | P0
-| .AG-0 | Creation `.agents/` (AGENT, INDEX, CHECKLIST, etc.) | ✅ TERMINE | P0
-| .AG-1 | Consolidation `.agents/` (waiter-plugin, CADRAGE_METHODE_N) | ✅ TERMINE | P0
+| .AG-0 | Creation `.agents/`, renommage waiter-plugin→waiter-gradle, remote cheroliv/waiter-gradle | ✅ TERMINE | P0
+| .AG-1 | Consolidation `.agents/` (gouvernance vers waiter-plugin/, CADRAGE_METHODE_N) | ✅ TERMINE | P0
 | EPIC-0 | Onboarding — Docker + JDK + `./gradlew` bootstrap | A FAIRE | P0
 | EPIC-1 | Decouverte — `./gradlew tasks`, parsing, descriptions | A FAIRE | P0
 | EPIC-2 | Execution — shell wrapper + chaining + erreurs | A FAIRE | P0
@@ -83,11 +84,12 @@ _Session terminee_ : —
 
 |===
 | Projet | Chemin | Sessions | Derniere maj
-| waiter-plugin | `waiter-plugin/` | 1 | 2026-05-07
-| planner-gradle | `foundry/OSS/planner-gradle/` | 3 | 2026-05-07
-| codex-gradle | `foundry/OSS/codex-gradle/` | 4 | 2026-05-07
-| codebase-gradle | `foundry/OSS/codebase-gradle/` | 5 | 2026-05-07
-| quizz-benchmark | `foundry/OSS/quizz-benchmark-gradle/quizz-benchmark-plugin/` | 3 | 2026-05-07
+| waiter-gradle | `foundry/OSS/waiter-gradle/waiter-plugin/` | 1 (cadrage) | 2026-05-11
+| planner-gradle | `foundry/OSS/planner-gradle/` | 5 | 2026-05-11
+| codex-gradle | `foundry/OSS/codex-gradle/` | 17 | 2026-05-11
+| codebase-gradle | `foundry/OSS/codebase-gradle/` | 21 | 2026-05-11
+| quizz-benchmark | `foundry/OSS/quizz-benchmark-gradle/quizz-benchmark-plugin/` | 6 | 2026-05-11
+| engine | `foundry/OSS/engine/` | 10 | 2026-05-11
 | magic_stick | `foundry/OSS/magic_stick/` | 69 | 2026-05-07
-| magic-stick (doc site) | `office/sites/magic-stick/` | 1 | 2026-05-07
+| magic-stick (doc site) | `office/sites/magic-stick/` | 4 | 2026-05-11
 |===

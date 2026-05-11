@@ -1,9 +1,10 @@
-= PROMPT_REPRISE — waiter-plugin
+= PROMPT_REPRISE — waiter-gradle
+:date: 2026-05-11
 
 _Session suivante_ : 001 — EPIC-0 Onboarding
 
 '''
-== Contexte Session 000 — Cadrage Methodologique
+== Contexte Session 000 — Cadrage Methodologique + Gouvernance
 
 Les 8 ateliers de cadrage sont termines et documentes :
 - CADRAGE_METHODE_1.adoc : QQOQCP + Product Vision Board
@@ -15,7 +16,10 @@ Les 8 ateliers de cadrage sont termines et documentes :
 - CADRAGE_METHODE_7.adoc : Stack, archi, CI/CD, securite
 - CADRAGE_METHODE_8.adoc : Synthèse, Sprint Planning, DoD, atomicisation
 
-Projet renomme waiter-plugin. Structure `.agents/` consolidee. Tool-agnostique par conception.
+Projet renomme waiter-plugin → waiter-gradle (pattern foundry/OSS standard).
+Gouvernance agent deplacee de la racine `waiter-gradle/` vers `waiter-plugin/`.
+Remote GitHub : https://github.com/cheroliv/waiter-gradle.git
+Tool-agnostique par conception. DAG N2 — importable par engine N3, jamais importe N3.
 
 '''
 == Mission Session 001 — EPIC-0 Onboarding

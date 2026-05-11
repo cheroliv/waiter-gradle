@@ -1,10 +1,11 @@
-= waiter-plugin — Directives Agent
+= waiter-gradle — Directives Agent
 :navtitle: DIRECTIVES AGENT
 :toc: left
 :icons: font
 
-Le **waiter-plugin** est le point d'entree unique pour piloter l'ecosysteme foundry.
+Le **waiter-plugin** est le plugin Gradle contenu dans `waiter-gradle/waiter-plugin/` (pattern foundry/OSS standard).
 Tool-agnostique par conception : deux interfaces uniquement — shell local (`./gradlew {task}`) et protocole Git (commit+push → CI/CD).
+DAG N2 — importable par N3 engine, jamais importe N3.
 
 == Tech
 * Kotlin 2.1+, Gradle 8.x, `kotlin-dsl`
