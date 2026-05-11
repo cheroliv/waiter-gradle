@@ -1,0 +1,25 @@
+= Session 001 — waiter-gradle : Correction gouvernance agent
+:date: 2026-05-12
+:type: gouvernance
+
+== Contexte
+
+Session 000 avait créé la gouvernance dans `.agents/` mais avec AGENT.adoc et PROMPT_REPRISE.adoc
+à l'intérieur de `.agents/` au lieu de la racine du plugin `waiter-plugin/`.
+
+== Actions
+
+. Déplacement AGENT.adoc du dossier `.agents/` vers la racine de `waiter-plugin/`
+. Déplacement PROMPT_REPRISE.adoc du dossier `.agents/` vers la racine de `waiter-plugin/`
+. Mise à jour de `.agents/INDEX.adoc` pour corriger les chemins de référence des fichiers EAGER
+. Mise à jour de `.agents/SESSIONS_HISTORY.adoc`
+
+== Résultat
+
+Structure conforme au pattern foundry/OSS standard :
+- AGENT.adoc et PROMPT_REPRISE.adoc à la racine du plugin
+- .agents/ contient INDEX, SESSION_CHECKLIST, SESSION_PROCEDURE, SESSIONS_HISTORY, sessions/, archives/
+
+== Prochaine étape
+
+Session 002 — EPIC-0 Onboarding
