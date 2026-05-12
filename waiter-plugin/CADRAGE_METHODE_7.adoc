@@ -26,8 +26,8 @@ Le plugin s'appuie sur l'existant. Sa coherence repose sur l'organisation physiq
 |===
 | Element du workspace | Role pour le plugin
 | `AGENTS.md` (racine) | Hook d'ouverture standardise, regles transverses, 5 boroughs
-| `foundry/OSS/engine/` (N3) | Point d'agregation ou le plugin est integre
-| `foundry/OSS/*/` (N0→N2) | Les 15+ plugins dont les taches sont exposees
+| `foundry/public/engine/` (N3) | Point d'agregation ou le plugin est integre
+| `foundry/public/*/` (N0→N2) | Les 15+ plugins dont les taches sont exposees
 | `office/sites/` | Contenu publie par bakery, alimente par les taches CI/CD
 | `configuration/` (circle 1) | Secrets, jamais exposes
 | `SESSION_CHECKLIST.adoc` | Procedure ouverture/fermeture standard

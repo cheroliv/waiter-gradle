@@ -169,9 +169,9 @@ pour ne contenir que les 10 dernieres sessions (sliding window).
 
 |===
 | Projet | Chemin | Role
-| plantuml-gradle | `/home/cheroliv/workspace/foundry/OSS/plantuml-gradle/plantuml-plugin` | Plugin Gradle mature, reference principale
-| bakery-gradle | `/home/cheroliv/workspace/foundry/OSS/bakery-gradle/bakery-plugin` | Plugin Gradle convention-based
-| codex-gradle | `/home/cheroliv/workspace/foundry/OSS/codex-gradle/doc-pipeline` | Plugin Gradle N2 avec buildSrc
+| plantuml-gradle | `/home/cheroliv/workspace/foundry/public/plantuml-gradle/plantuml-plugin` | Plugin Gradle mature, reference principale
+| bakery-gradle | `/home/cheroliv/workspace/foundry/public/bakery-gradle/bakery-plugin` | Plugin Gradle convention-based
+| codex-gradle | `/home/cheroliv/workspace/foundry/public/codex-gradle/doc-pipeline` | Plugin Gradle N2 avec buildSrc
 |===
 
 Ces chemins sont LAZY — ne jamais charger leur contenu en EAGER.

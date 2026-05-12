@@ -7,7 +7,7 @@ _Session suivante_ : 005 — EPIC-0 Onboarding
 == Contexte Session 004 — AGENT.adoc + opencode.json
 
 Les fichiers AGENT.adoc et opencode.json ont ete crees dans waiter-plugin/ pour
-suivre le pattern foundry/OSS standard (AGENT.adoc + opencode.json + .agents/
+suivre le pattern foundry/public standard (AGENT.adoc + opencode.json + .agents/
 + PROMPT_REPRISE au meme niveau). Code Review Globale validee.
 
 '''
