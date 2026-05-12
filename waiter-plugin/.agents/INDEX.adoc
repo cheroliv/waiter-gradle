@@ -5,9 +5,8 @@ _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle consommateur waiter-plugin (pattern foundry/OSS standard)
 
 _Derniere mise a jour_ : 2026-05-12
-_Session terminee_ : 001 — Correction gouvernance agent
-_Prochaine session_ : 002 — EPIC-0 Onboarding
-_Projet_ : `foundry/OSS/waiter-gradle/waiter-plugin/` — plugin sous waiter-gradle (pattern foundry/OSS standard)
+_Session terminee_ : 004 — AGENT.adoc + opencode.json + Code Review Globale
+_Prochaine session_ : 005 — EPIC-0 Onboarding (package org.example → com.cheroliv.waiter)
 
 '''
 == REGLES ABSOLUES
@@ -24,6 +23,9 @@ _Projet_ : `foundry/OSS/waiter-gradle/waiter-plugin/` — plugin sous waiter-gra
 
 |===
 | # | Date | Type | Sujet | Score
+| 004 | 2026-05-12 | governance | AGENT.adoc + opencode.json + Code Review Globale | 10/10
+| 003 | 2026-05-12 | governance | Code Review Globale — audit passif | 10/10
+| 002 | 2026-05-12 | chore | EPIC D — Java 24 (jvmTarget + jvmToolchain) | —
 | 001 | 2026-05-12 | gouvernance | Correction gouvernance agent : deplacement AGENT.adoc + PROMPT_REPRISE.adoc de `.agents/` vers racine `waiter-plugin/` | 10/10
 | 000 | 2026-05-11 | cadrage+gouvernance | Cadrage Methodologique : 8 ateliers (QQOQCP→Sprint Planning), renommage waiter-plugin→waiter-gradle, migration gouvernance vers waiter-plugin/, remote GitHub cheroliv/waiter-gradle | 10/10
 |===

@@ -1,0 +1,24 @@
+= Session 004 — Gouvernance AGENT.adoc + opencode.json + Code Review
+:date: 2026-05-12
+:type: governance
+:score: 10/10
+
+== Contexte
+
+Code review globale des 8 boroughs a révélé que waiter-gradle n'avait pas d'`AGENT.adoc`
+ni d'`opencode.json` au même niveau que `.agents/` dans `waiter-plugin/`. Le pattern
+des autres boroughs est : AGENT.adoc + opencode.json + PROMPT_REPRISE + .agents/ au même
+niveau.
+
+== Actions
+
+. Créé `waiter-plugin/AGENT.adoc` (186 lignes) : règles absolues, architecture, TODOs
+  bootstrap, session procedure, portefeuille transverse, références de style LAZY
+. Créé `waiter-plugin/opencode.json` (6 lignes) : instructions = ["AGENT.adoc"]
+. Pattern gouvernance vérifié : AGENT.adoc + opencode.json + PROMPT_REPRISE + .agents/ ✅
+
+== TODOs restants (documentés dans AGENT.adoc)
+- Renommer package org.example → com.cheroliv.waiter
+- Renommer plugin ID org.example.greeting → com.cheroliv.waiter
+- Ajouter jvmToolchain(24)
+- Ajouter CI GitHub Actions test.yml

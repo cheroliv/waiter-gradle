@@ -1,31 +1,24 @@
 = PROMPT_REPRISE — waiter-gradle
 :date: 2026-05-12
 
-_Session suivante_ : 002 — EPIC-0 Onboarding
+_Session suivante_ : 005 — EPIC-0 Onboarding
 
 '''
-== Contexte Session 001 — Correction gouvernance agent
+== Contexte Session 004 — AGENT.adoc + opencode.json
 
-Les fichiers AGENT.adoc et PROMPT_REPRISE.adoc ont ete deplaces de `.agents/` vers la racine
-de `waiter-plugin/` pour suivre le pattern foundry/OSS standard.
-La structure de gouvernance est maintenant conforme.
+Les fichiers AGENT.adoc et opencode.json ont ete crees dans waiter-plugin/ pour
+suivre le pattern foundry/OSS standard (AGENT.adoc + opencode.json + .agents/
++ PROMPT_REPRISE au meme niveau). Code Review Globale validee.
 
 '''
-== Mission Session 002 — EPIC-0 Onboarding
+== Mission Session 005 — EPIC-0 Onboarding
 
-*Objectif* : Bootstraper le plugin Gradle `waiter-plugin` dans engine/.
+*Objectif* : Renommer package org.example → com.cheroliv.waiter + renommer plugin ID.
 
 *Priorite* : P0
-*Depend de* : Gouvernance agent (TERMINE)
 
 *Sous-taches* :
-. Creer `engine/waiter-plugin/settings.gradle.kts`
-. Creer `engine/waiter-plugin/build.gradle.kts` (kotlin-dsl, java-gradle-plugin)
-. Mettre a jour `engine/settings.gradle.kts` — ajouter `include("waiter-plugin")`
-. Implementer `WaiterPlugin.kt` (entry point, enregistre extension + tasks)
-. Implementer les tasks wrapper : shell-out vers les plugins N0/N1/N2
-. Creer `Dockerfile` + `docker-compose.yaml` dans engine/
-. Verifier : `./gradlew tasks` liste les taches
-. Verifier : `./gradlew compileKotlin` compile
-
-*Interfaces* : shell local (`./gradlew -p engine {task}`) + protocole Git (commit+push CI/CD). Zero adherence tool.
+. Renommer package org.example → com.cheroliv.waiter
+. Renommer plugin ID org.example.greeting → com.cheroliv.waiter
+. Ajouter jvmToolchain(24)
+. Ajouter CI GitHub Actions test.yml
