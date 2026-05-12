@@ -1,21 +1,201 @@
-= waiter-gradle — Directives Agent
-:navtitle: DIRECTIVES AGENT
+= Waiter Gradle Plugin — Directives Agent
 :toc: left
+:toclevels: 3
 :icons: font
+:sectnums:
 
-Le **waiter-plugin** est le plugin Gradle contenu dans `waiter-gradle/waiter-plugin/` (pattern foundry/OSS standard).
-Tool-agnostique par conception : deux interfaces uniquement — shell local (`./gradlew {task}`) et protocole Git (commit+push → CI/CD).
-DAG N2 — importable par N3 engine, jamais importe N3.
+[CAUTION]
+====
+**ARRET OBLIGATOIRE** avant `rm`, `Write` (ecrasement), ou suppression de fichier :
+1. LIRE le fichier en entier
+2. VERIFIER `git ls-files -- <fichier>` (si pas dans git = pas de retour possible)
+3. DEMANDER confirmation fichier par fichier a l'utilisateur
+4. ATTENDRE "oui" avant d'agir
+====
 
-== Tech
-* Kotlin 2.1+, Gradle 8.x, `kotlin-dsl`
-* Publication : Plugin Portal (`com.cheroliv.waiter`)
-* Canaux : shell (stdout POSIX) + Git (commit+push CI/CD)
-* Interchangeabilite : fichiers `.agents/*.adoc` ingerables par tout agent LangChain4j
+== Projet
 
-== Regles
-* INTERDICTION de commit/push sans permission utilisateur
-* Lire TOUJOURS PROMPT_REPRISE.adoc en debut de session
-* Zero secret/codebase expose dans les descriptions de taches
-* Le protocole Git (commit+push) est le canal de communication par defaut
-* Zero adherence a un outil consommateur specifique
+**Nom** : waiter-gradle — plugin Gradle d'attente/barriere pour pipeline CI/CD
+**Stack** : Kotlin, Gradle (plugin development), JUnit 5, functionalTest
+**DAG** : N2 — Plugin Gradle (publiable, consommable par engine N3)
+**Statut** : Bootstrap — EPIC-0 Onboarding, 8 ateliers CADRAGE_METHODE termines
+
+=== Objectif
+
+Plugin Gradle pour les workflows CI/CD :
+- Attente conditionnelle (wait-for API, wait-for service, health check)
+- Barrieres de pipeline (gate avant deploy, smoke test)
+- Timeout et retry configurables
+- Integration native avec GitHub Actions
+
+== Regles Absolues
+
+=== Git
+
+**INTERDICTION FORMELLE** de commit/push/merge sans permission explicite de l'utilisateur.
+
+Commandes autorisees (lecture seule) : `git status`, `git diff`, `git log`, `git show`
+Commandes interdites (sauf ordre) : `git add`, `git commit`, `git push`, `git merge`, `git rebase`
+
+=== Tests
+
+L'agent NE DOIT JAMAIS lancer de tests (`./gradlew test`, etc.) lors de la procedure de fin de session SANS permission explicite de l'utilisateur.
+
+=== Securite
+
+* Jamais de secrets en dur dans le code
+* Jamais de credentials dans les fichiers de config
+* Jamais de tokens API commites dans Git
+* Utiliser des variables d'environnement avec fallback
+
+=== Secrets et tokens — INTERDICTION DE LOG
+
+**PRINCIPE** : Les tokens API, mots de passe, et identifiants credentials NE DOIVENT JAMAIS apparaitre dans la sortie terminal de l'agent.
+
+**INTERDICTIONS** :
+
+* **NE JAMAIS** passer un token en argument visible d'une commande
+* **NE JAMAIS** afficher le contenu d'un fichier contenant des tokens
+* **NE JAMAIS** utiliser `echo`, `cat`, ou toute commande qui affiche des tokens dans le terminal
+
+=== Methodologie de Travail
+
+* **1 fichier a la fois** : Modifier un seul fichier avant de passer au suivant
+* **Validation immediate** : Compiler apres chaque modification
+* **Contexte leger** : Maximum 50k tokens EAGER (~3000 lignes)
+* **Regle d'or** : Mieux vaut 5 sessions de 20 minutes qu'une session de 2 heures avec debugging chaos.
+* **Hook ouverture** : Checklist `SESSION_CHECKLIST.adoc` obligatoire
+
+== Architecture du Projet
+
+[source,bash]
+----
+waiter-gradle/                          # RACINE GIT
+├── settings.gradle.kts                 # rootProject.name = "waiter-gradle"
+├── gradle.properties                   # configuration-cache=true
+├── gradle/                             # Wrapper + libs.versions.toml
+│   └── libs.versions.toml              # Version catalog (kotlin 2.3.20)
+└── waiter-plugin/                      # RACINE DE TRAVAIL + GOUVERNANCE
+    ├── build.gradle.kts                # Plugin id: org.example.greeting
+    ├── settings.gradle.kts             # rootProject.name = "waiter-plugin"
+    ├── src/
+    │   ├── main/kotlin/org/example/    # WaiterGradlePlugin.kt
+    │   ├── test/kotlin/org/example/    # WaiterGradlePluginTest.kt
+    │   └── functionalTest/kotlin/org/example/  # Functional test
+    ├── PROMPT_REPRISE.adoc             # Mission session en cours (EAGER)
+    ├── AGENT.adoc                      # ← CE FICHIER
+    └── .agents/                        # Gouvernance agent
+        ├── INDEX.adoc                  # Regles + roadmap + portefeuille (EAGER)
+        ├── SESSIONS_HISTORY.adoc
+        ├── SESSION_CHECKLIST.adoc      # Hook ouverture/fermeture (EAGER)
+        ├── SESSION_PROCEDURE.adoc
+        └── sessions/                   # Archives par session
+----
+
+== Gestion du Contexte — CRITIQUE
+
+* **Que faire ensuite ?** -> **`PROMPT_REPRISE.adoc`** (mission session en cours)
+* **Roadmap globale** -> **`.agents/INDEX.adoc`** (EPICs, portefeuille, statut)
+* **Cadrage methodologique** -> **`CADRAGE_METHODE_*.adoc`** (8 ateliers completes)
+
+== Session Procedure
+
+=== Debut de Session
+
+1. Lire `PROMPT_REPRISE.adoc` pour la mission en cours
+2. Lire `.agents/INDEX.adoc` pour les regles absolues + roadmap
+3. Executer la checklist `SESSION_CHECKLIST.adoc`
+
+=== Fin de Session
+
+**Mots-cles declencheurs** : "nouvelle session", "je quitte", "session terminee"
+
+**Procedure obligatoire en 6 etapes** :
+
+1. **Creer l'archive LAZY** : `.agents/sessions/{N}-{type}-{sujet}.adoc`
+2. **Mettre a jour PROMPT_REPRISE.adoc** — Mission N+1 (max 70 lignes)
+3. **Mettre a jour SESSIONS_HISTORY.adoc** — Ajouter la session terminee
+4. **Mettre a jour INDEX.adoc** — Date, session N+1, roadmap, portefeuille
+5. **Mettre a jour TEST_COVERAGE_ANALYSIS.adoc** (si tests modifies)
+6. **Mettre a jour COMPLETED_TASKS_ARCHIVE.adoc** : `.agents/archives/COMPLETED_TASKS_ARCHIVE_{mois}.adoc`
+
+**Aucune etape ne peut etre marquee OK si le fichier n'a pas ete effectivement modifie et verifie.**
+
+=== Mecanisme de backup — Rotation
+
+Tous les **10 sessions**, les donnees historiques sont copiees integralement
+dans `.agents/backup/` sans transformation. Les fichiers actifs sont tronques
+pour ne contenir que les 10 dernieres sessions (sliding window).
+
+== Conventions de Code
+
+* Kotlin idiomatic, pas de commentaires sauf demande
+* Tests : JUnit5 + Gradle TestKit + functionalTest
+* Documentation : AsciiDoc (.adoc) uniquement
+* Package : `com.cheroliv.waiter` (a renommer depuis `org.example`)
+
+=== TODOs Bootstrap
+
+[cols="2,3,3"]
+|===
+| Tache | Priorite | Statut
+
+| Renommer package `org.example` → `com.cheroliv.waiter`
+| 🔴 URGENT
+| A FAIRE
+
+| Renommer plugin ID `org.example.greeting` → `com.cheroliv.waiter`
+| 🔴 URGENT
+| A FAIRE
+
+| Remplir `libs.versions.toml` avec dependances JUnit, Jackson
+| 🟡 HAUTE
+| A FAIRE
+
+| Ajouter `jvmToolchain(24)`
+| 🟡 HAUTE
+| A FAIRE
+
+| Deplacer `.agents/` de `waiter-plugin/` → racine `waiter-gradle/`
+| 🟢 MOYENNE
+| A FAIRE
+
+| Ajouter CI GitHub Actions `test.yml`
+| 🔴 URGENT
+| A FAIRE
+|===
+
+== References de Style — Codebases LAZY
+
+|===
+| Projet | Chemin | Role
+| plantuml-gradle | `/home/cheroliv/workspace/foundry/OSS/plantuml-gradle/plantuml-plugin` | Plugin Gradle mature, reference principale
+| bakery-gradle | `/home/cheroliv/workspace/foundry/OSS/bakery-gradle/bakery-plugin` | Plugin Gradle convention-based
+| codex-gradle | `/home/cheroliv/workspace/foundry/OSS/codex-gradle/doc-pipeline` | Plugin Gradle N2 avec buildSrc
+|===
+
+Ces chemins sont LAZY — ne jamais charger leur contenu en EAGER.
+
+== Portefeuille Transverse — Relations avec les autres agents
+
+|===
+| Projet | Niveau DAG | Relation
+| `graphify-gradle` | N0 | Ne depend pas de waiter
+| `codebase-gradle` | N1 | Ne depend pas de waiter
+| `engine/` | N3 | Consommateur : provisionWorkspace reference waiter-plugin
+| `plantuml-gradle` | N2 | Pair N2
+| `training-gradle` | N2 | Pair N2 (meme pattern de bootstrap)
+|===
+
+== Fichiers EAGER (charges automatiquement)
+
+|===
+| Fichier | Role
+| `PROMPT_REPRISE.adoc` | Mission session en cours (max 70 lignes)
+| `.agents/INDEX.adoc` | Regles absolues + sessions recentes + roadmap
+| `.agents/SESSION_CHECKLIST.adoc` | Hook ouverture/fermeture
+| `AGENT.adoc` | Ce fichier — Directives completes
+|===
+
+[.text-right]
+*Document cree le 12 mai 2026 — Bootstrap gouvernance agent.*

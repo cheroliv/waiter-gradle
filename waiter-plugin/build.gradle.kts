@@ -1,9 +1,15 @@
-plugins {
-    // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
-    `java-gradle-plugin`
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-    // Apply the Kotlin JVM plugin to add support for Kotlin.
+plugins {
+    `java-gradle-plugin`
     alias(libs.plugins.kotlin.jvm)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_24
+    }
+    jvmToolchain(24)
 }
 
 repositories {
