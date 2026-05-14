@@ -4,9 +4,9 @@
 _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle consommateur waiter-plugin (pattern foundry/OSS standard)
 
-_Derniere mise a jour_ : 2026-05-12
-_Session terminee_ : 004 — AGENT.adoc + opencode.json + Code Review Globale
-_Prochaine session_ : 005 — EPIC-0 Onboarding (package org.example → com.cheroliv.waiter)
+_Derniere mise a jour_ : 2026-05-14
+_Session terminee_ : 005 — CI Template (EPIC F — engine orchestration)
+_Prochaine session_ : 006 — EPIC-0 Onboarding (package org.example → com.cheroliv.waiter)
 
 '''
 == REGLES ABSOLUES
@@ -23,6 +23,7 @@ _Prochaine session_ : 005 — EPIC-0 Onboarding (package org.example → com.che
 
 |===
 | # | Date | Type | Sujet | Score
+| 005 | 2026-05-14 | infra | CI Template — .github/workflows/test.yml deploye, build OK, EPIC F cross-boroughs | 10/10
 | 004 | 2026-05-12 | governance | AGENT.adoc + opencode.json + Code Review Globale | 10/10
 | 003 | 2026-05-12 | governance | Code Review Globale — audit passif | 10/10
 | 002 | 2026-05-12 | chore | EPIC D — Java 24 (jvmTarget + jvmToolchain) | —

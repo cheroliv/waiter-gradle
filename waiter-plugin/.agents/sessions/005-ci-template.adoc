@@ -1,0 +1,20 @@
+= Session 005 — CI Template (EPIC F — engine orchestration)
+:date: 2026-05-14
+:type: infra
+:score: 10/10
+
+== Objectif
+
+Deploiement du template CI standard `.github/workflows/test.yml` (JDK 24, Gradle, JUnit)
+sur waiter-plugin/ via la session engine 013 (EPIC F cross-boroughs).
+
+== Actions
+
+* `waiter-gradle/waiter-plugin/.github/workflows/test.yml` cree — template standard
+* Build local verifie : `./gradlew build -x test` BUILD SUCCESSFUL
+* Aucune modification de code source waiter-plugin
+
+== Contexte
+
+Session 013 engine (2026-05-14) : EPIC F Template CI unifie deploye sur 5 boroughs restants.
+Waiter-gradle (Compton) est un des 5.
